@@ -36,8 +36,8 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-                        //NoStressWeddingApp(modifier = Modifier.fillMaxSize())
-                        RegisterScreen()
+                        NoStressWeddingApp(modifier = Modifier.fillMaxSize())
+                        //RegisterScreen()
                     }
                 }
             }

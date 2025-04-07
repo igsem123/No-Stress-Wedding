@@ -5,6 +5,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("kotlin-kapt")
     id ("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -72,6 +73,15 @@ dependencies {
     // For local unit tests
     testImplementation ("com.google.dagger:hilt-android-testing:2.56.1")
     kaptTest ("com.google.dagger:hilt-compiler:2.56.1")
+
+    // Firebase
+    implementation(libs.firebase.bom)
+    implementation("com.firebaseui:firebase-ui-auth:9.0.0")
+
+    // Login com Google
+    implementation("androidx.credentials:credentials:1.5.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 }
 
 kapt {
