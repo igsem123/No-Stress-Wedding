@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "680995951918",
+    "project_id": "greetingcard-8c595b11",
+    "storage_bucket": "greetingcard-8c595b11.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680995951918:android:7905ecccdd85c9771316bf",
+        "android_client_info": {
+          "package_name": "br.com.iftm.edu.nostresswedding"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "680995951918-m1tpo24kgj9sgi3tssjk1ik8mv5q33rk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.iftm.edu.nostresswedding",
+            "certificate_hash": "58d6840ae673c02c08caad2fc13aabc6d34c5f94"
+          }
+        },
+        {
+          "client_id": "680995951918-7qqld9cq86cksa3p9hkepsqgm5j8qgcs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkwH7dAJI9XXMWE9Avzw0sZOytEw8fqS8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "680995951918-7qqld9cq86cksa3p9hkepsqgm5j8qgcs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

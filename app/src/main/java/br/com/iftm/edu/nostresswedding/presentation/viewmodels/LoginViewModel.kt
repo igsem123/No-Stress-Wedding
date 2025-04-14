@@ -16,4 +16,14 @@ class LoginViewModel @Inject constructor() : ViewModel() {
     private val _password = MutableStateFlow("")
     val password: StateFlow<String>
         get() = _password
+
+    // Função para atualizar o email
+    fun updateEmail(newEmail: String) {
+        _email.value = newEmail
+    }
+
+    // Função para atualizar a senha
+    fun updatePassword(newPassword: String) {
+        _password.value = newPassword
+    }
 }
