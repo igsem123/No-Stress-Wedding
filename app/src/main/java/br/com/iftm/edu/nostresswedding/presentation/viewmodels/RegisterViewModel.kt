@@ -1,6 +1,6 @@
 package br.com.iftm.edu.nostresswedding.presentation.viewmodels
 
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.iftm.edu.nostresswedding.data.local.database.NSWeddingDatabase
@@ -11,7 +11,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 
 @HiltViewModel

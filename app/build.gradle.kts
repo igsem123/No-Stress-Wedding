@@ -62,17 +62,17 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Hilt dependencies
-    implementation("com.google.dagger:hilt-android:2.56.1")
-    kapt("com.google.dagger:hilt-compiler:2.56.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0") // Para hiltViewModel() no Compose
+    implementation(libs.hilt.android)
+    kapt(libs.google.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose) // Para hiltViewModel() no Compose
 
     // For instrumentation tests
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.56.1")
-    kaptAndroidTest("com.google.dagger:hilt-compiler:2.56.1")
+    androidTestImplementation(libs.dagger.hilt.android.testing)
+    kaptAndroidTest(libs.google.hilt.compiler)
 
     // For local unit tests
-    testImplementation("com.google.dagger:hilt-android-testing:2.56.1")
-    kaptTest("com.google.dagger:hilt-compiler:2.56.1")
+    testImplementation(libs.dagger.hilt.android.testing)
+    kaptTest(libs.google.hilt.compiler)
 
     // Firebase
     implementation(platform(libs.firebase.bom))
@@ -80,9 +80,9 @@ dependencies {
     implementation (libs.firebase.firestore.ktx)
 
     // Login com Google
-    implementation("androidx.credentials:credentials:1.5.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     // Room
     implementation(libs.androidx.room.runtime)
@@ -91,7 +91,7 @@ dependencies {
     implementation(libs.androidx.room.paging)
 
     // Google Fonts
-    implementation ("androidx.compose.ui:ui-text-google-fonts:1.7.8")
+    implementation (libs.androidx.ui.text.google.fonts)
 }
 
 kapt {

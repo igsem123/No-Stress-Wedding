@@ -126,7 +126,7 @@ fun RegisterScreen(
             placeholder = "Digite seu e-mail",
             icon = Icons.Outlined.Email,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = VisualTransformation.None
         )
         CustomOutlinedTextField(
             value = state.password,

@@ -31,7 +31,7 @@ fun CustomOutlinedTextField(
 ) {
     OutlinedTextField(
         value = value,
-        onValueChange = { onValueChange },
+        onValueChange = { onValueChange(it) },
         label = {
             Text(
                 text = label,
@@ -65,5 +65,6 @@ fun CustomOutlinedTextField(
         },
         keyboardOptions = keyboardOptions ?: KeyboardOptions.Default,
         visualTransformation = visualTransformation ?: VisualTransformation.None,
+        singleLine = true
     )
 }
