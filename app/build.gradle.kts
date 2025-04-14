@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     id("kotlin-kapt")
-    id ("com.google.dagger.hilt.android")
+    id("com.google.dagger.hilt.android")
     id("com.google.gms.google-services")
 }
 
@@ -62,26 +62,36 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Hilt dependencies
-    implementation ("com.google.dagger:hilt-android:2.56.1")
-    kapt ("com.google.dagger:hilt-compiler:2.56.1")
+    implementation("com.google.dagger:hilt-android:2.56.1")
+    kapt("com.google.dagger:hilt-compiler:2.56.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0") // Para hiltViewModel() no Compose
 
     // For instrumentation tests
-    androidTestImplementation  ("com.google.dagger:hilt-android-testing:2.56.1")
-    kaptAndroidTest ("com.google.dagger:hilt-compiler:2.56.1")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.56.1")
+    kaptAndroidTest("com.google.dagger:hilt-compiler:2.56.1")
 
     // For local unit tests
-    testImplementation ("com.google.dagger:hilt-android-testing:2.56.1")
-    kaptTest ("com.google.dagger:hilt-compiler:2.56.1")
+    testImplementation("com.google.dagger:hilt-android-testing:2.56.1")
+    kaptTest("com.google.dagger:hilt-compiler:2.56.1")
 
     // Firebase
-    implementation(libs.firebase.bom)
-    implementation("com.firebaseui:firebase-ui-auth:9.0.0")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation (libs.firebase.firestore.ktx)
 
     // Login com Google
     implementation("androidx.credentials:credentials:1.5.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+    // Room
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.paging)
+
+    // Google Fonts
+    implementation ("androidx.compose.ui:ui-text-google-fonts:1.7.8")
 }
 
 kapt {

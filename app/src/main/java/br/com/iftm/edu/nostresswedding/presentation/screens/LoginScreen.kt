@@ -29,6 +29,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import br.com.iftm.edu.nostresswedding.R
@@ -41,7 +43,7 @@ fun LoginScreen(
     loginViewModel: LoginViewModel,
     onLoginClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {}
-    ) {
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -93,7 +95,7 @@ fun LoginScreen(
             )
             OutlinedTextField(
                 value = password,
-                onValueChange = { loginViewModel.updatePassword(it)  },
+                onValueChange = { loginViewModel.updatePassword(it) },
                 label = { Text(text = "Senha", color = Pink40) },
                 modifier = Modifier.padding(bottom = 8.dp),
                 colors = TextFieldDefaults.colors(
@@ -117,7 +119,8 @@ fun LoginScreen(
                         modifier = Modifier
                             .size(22.dp)
                     )
-                }
+                },
+                visualTransformation = PasswordVisualTransformation(),
             )
             TextButton(
                 onClick = { onLoginClick },
@@ -135,23 +138,32 @@ fun LoginScreen(
                         .padding(end = 8.dp)
                         .size(20.dp)
                 )
-                Text(text = "Entrar")
+                Text(
+                    text = "Entrar",
+                    style = MaterialTheme.typography.headlineSmall,
+                )
             }
         }
         TextButton(
-            onClick = { onRegisterClick }, modifier = Modifier
+            onClick = { onRegisterClick() },
+            modifier = Modifier
                 .padding(bottom = 16.dp)
                 .width(220.dp)
                 .border(
                     width = 1.dp,
                     color = Pink40,
                     shape = MaterialTheme.shapes.extraLarge
-                ), colors = ButtonDefaults.buttonColors(
+                ),
+            colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
-                contentColor = Pink40,
-            ), shape = MaterialTheme.shapes.extraLarge
+                contentColor = Pink40
+            ),
+            shape = MaterialTheme.shapes.extraLarge
         ) {
-            Text(text = "Não tem conta? Cadastre-se!")
+            Text(
+                text = "Não tem conta? Cadastre-se!",
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }

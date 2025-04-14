@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,6 +21,7 @@ import br.com.iftm.edu.nostresswedding.NoStressWeddingApp
 import br.com.iftm.edu.nostresswedding.presentation.screens.LoginScreen
 import br.com.iftm.edu.nostresswedding.presentation.screens.RegisterScreen
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginViewModel
+import br.com.iftm.edu.nostresswedding.presentation.viewmodels.RegisterViewModel
 import br.com.iftm.edu.nostresswedding.ui.theme.NoStressWeddingTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -36,7 +38,13 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-                        NoStressWeddingApp(modifier = Modifier.fillMaxSize())
+                        val registerViewModel = hiltViewModel<RegisterViewModel>()
+                        val loginViewModel = hiltViewModel<LoginViewModel>()
+                        NoStressWeddingApp(
+                            modifier = Modifier.fillMaxSize(),
+                            registerViewModel = registerViewModel,
+                            loginViewModel = loginViewModel
+                        )
                         //RegisterScreen()
                     }
                 }
@@ -46,7 +54,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NoStressWeddingApp(modifier: Modifier = Modifier) {
+fun NoStressWeddingApp(
+    modifier: Modifier = Modifier,
+    registerViewModel: RegisterViewModel,
+    loginViewModel: LoginViewModel
+) {
     val navController = rememberNavController() // Controlador de navegação
 
     NavHost(
@@ -63,7 +75,7 @@ fun NoStressWeddingApp(modifier: Modifier = Modifier) {
                 onRegisterClick = { navController.navigate("register") }
             )
         }
-        composable("register") { RegisterScreen() }
+        composable("register") { RegisterScreen(viewModel = registerViewModel, navController = navController) }
         // composable("home") { HomeScreen() }
     }
 }

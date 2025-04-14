@@ -1,17 +1,13 @@
 package br.com.iftm.edu.nostresswedding.presentation.sign_in
 
 import android.content.Context
-import android.provider.Settings.Global.getString
 import androidx.credentials.GetCredentialRequest
-import br.com.iftm.edu.nostresswedding.R
-import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 class GoogleAuthUiClient(
-    private val context: Context,
-    private val oneTapClient: SignInClient
+    private val context: Context
 ) {
     val WEB_CLIENT_ID = "680995951918"
 
