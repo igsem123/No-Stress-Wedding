@@ -92,6 +92,10 @@ dependencies {
 
     // Google Fonts
     implementation (libs.androidx.ui.text.google.fonts)
+
+    // Icons
+    implementation(libs.font.awesome)
+    implementation(libs.line.awesome)
 }
 
 kapt {

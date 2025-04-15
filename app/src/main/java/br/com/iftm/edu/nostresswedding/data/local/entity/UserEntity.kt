@@ -10,6 +10,6 @@ data class UserEntity(
     val email: String = "",
     val phone: String = "",
     val weddingDate: String = "",
-    val weddingBudget: Double = 0.0,
-    val name: String,
+    val weddingBudget: String = "",
+    val name: String = "",
 )

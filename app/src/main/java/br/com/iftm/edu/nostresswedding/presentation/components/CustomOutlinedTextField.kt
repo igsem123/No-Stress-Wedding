@@ -3,6 +3,7 @@ package br.com.iftm.edu.nostresswedding.presentation.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +28,10 @@ fun CustomOutlinedTextField(
     placeholder: String,
     icon: ImageVector,
     keyboardOptions: KeyboardOptions?,
-    visualTransformation: VisualTransformation?
+    visualTransformation: VisualTransformation?,
+    keyboardActions: KeyboardActions?,
+    isError: Boolean? = false,
+    supportingText: @Composable (() -> Unit)? = null,
 ) {
     OutlinedTextField(
         value = value,
@@ -65,6 +69,9 @@ fun CustomOutlinedTextField(
         },
         keyboardOptions = keyboardOptions ?: KeyboardOptions.Default,
         visualTransformation = visualTransformation ?: VisualTransformation.None,
-        singleLine = true
+        singleLine = true,
+        keyboardActions = keyboardActions ?: KeyboardActions.Default,
+        isError = isError == true,
+        supportingText = supportingText,
     )
 }

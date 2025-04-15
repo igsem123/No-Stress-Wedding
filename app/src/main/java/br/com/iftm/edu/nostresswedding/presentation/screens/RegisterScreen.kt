@@ -1,22 +1,28 @@
 package br.com.iftm.edu.nostresswedding.presentation.screens
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Create
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -47,6 +53,15 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import compose.icons.LineAwesomeIcons
+import compose.icons.lineawesomeicons.DollarSignSolid
+import compose.icons.lineawesomeicons.Registered
+import compose.icons.lineawesomeicons.User
+import compose.icons.lineawesomeicons.UserLockSolid
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,9 +72,17 @@ fun RegisterScreen(
     navController: NavController
 ) {
     val state by viewModel.uiState
+    val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     if (state.success) {
         LaunchedEffect(Unit) {
+            Toast.makeText(
+                context,
+                "Usuário cadastrado com sucesso!",
+                Toast.LENGTH_SHORT
+            ).show()
+
             navController.navigate("login") {
                 popUpTo("register") {
                     inclusive = true
@@ -74,12 +97,7 @@ fun RegisterScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        val dataPickerState = rememberDatePickerState(
-            initialSelectedDateMillis = LocalDateTime.now()
-                .atZone(ZoneOffset.UTC)
-                .toInstant()
-                .toEpochMilli(),
-        )
+        val dataPickerState = rememberDatePickerState()
 
         viewModel.onFieldChange(
             "weddingDate", dataPickerState.selectedDateMillis?.let {
@@ -115,9 +133,18 @@ fun RegisterScreen(
             onValueChange = { viewModel.onFieldChange("name", it) },
             label = "Nome",
             placeholder = "Digite seu nome",
-            icon = Icons.Outlined.Person,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            visualTransformation = VisualTransformation.None
+            icon = LineAwesomeIcons.User,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Words
+            ),
+            visualTransformation = VisualTransformation.None,
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            )
         )
         CustomOutlinedTextField(
             value = state.username,
@@ -125,8 +152,16 @@ fun RegisterScreen(
             label = "E-mail",
             placeholder = "Digite seu e-mail",
             icon = Icons.Outlined.Email,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            visualTransformation = VisualTransformation.None
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            visualTransformation = VisualTransformation.None,
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            )
         )
         CustomOutlinedTextField(
             value = state.password,
@@ -135,16 +170,43 @@ fun RegisterScreen(
             placeholder = "Digite sua senha",
             icon = Icons.Outlined.Lock,
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            )
         )
         CustomOutlinedTextField(
             value = state.confirmPassword,
             onValueChange = { viewModel.onFieldChange("confirmPassword", it) },
             label = "Confirmar Senha",
             placeholder = "Confirme sua senha",
-            icon = Icons.Outlined.Create,
+            icon = LineAwesomeIcons.UserLockSolid,
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    if (viewModel.isPasswordEqual()) {
+                        focusManager.clearFocus()
+                    }
+                }
+            ),
+            supportingText = {
+                if (!viewModel.isPasswordEqual() && state.confirmPassword.isNotEmpty()) {
+                    Text(
+                        text = "As senhas não coincidem!",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         )
         DatePicker(
             state = dataPickerState,
@@ -188,9 +250,17 @@ fun RegisterScreen(
             onValueChange = { viewModel.onFieldChange("weddingBudget", it) },
             label = "Orçamento do Casamento",
             placeholder = "Digite o valor do orçamento",
-            icon = Icons.Outlined.Lock,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            visualTransformation = VisualTransformation.None
+            icon = LineAwesomeIcons.DollarSignSolid,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            visualTransformation = VisualTransformation.None,
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            )
         )
 
         Text(
@@ -224,9 +294,10 @@ fun RegisterScreen(
                     text = "Cadastrar",
                     style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(8.dp),
                     textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Light
+                    fontWeight = FontWeight.W400
                 )
             }
         }
@@ -242,6 +313,8 @@ fun RegisterScreen(
                 textAlign = TextAlign.Center
             )
         }
+
+        Spacer(Modifier.height(16.dp))
     }
 }
 
@@ -253,7 +326,7 @@ private fun RegisterScreenPreview() {
         RegisterScreen(
             modifier = Modifier,
             viewModel = RegisterViewModel(
-                db = TODO()
+                repository = TODO()
             ), // Mock RegisterViewModel for preview
             navController = NavController(context = LocalContext.current) // Mock NavController for preview
         )

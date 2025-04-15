@@ -8,16 +8,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.iftm.edu.nostresswedding.NoStressWeddingApp
+import br.com.iftm.edu.nostresswedding.presentation.screens.HomeScreen
 import br.com.iftm.edu.nostresswedding.presentation.screens.LoginScreen
 import br.com.iftm.edu.nostresswedding.presentation.screens.RegisterScreen
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginViewModel
@@ -45,7 +44,6 @@ class MainActivity : ComponentActivity() {
                             registerViewModel = registerViewModel,
                             loginViewModel = loginViewModel
                         )
-                        //RegisterScreen()
                     }
                 }
             }
@@ -71,12 +69,27 @@ fun NoStressWeddingApp(
             LoginScreen(
                 modifier = modifier,
                 loginViewModel = loginViewModel,
-                onLoginClick = { /* Navegar para a próxima tela */ },
-                onRegisterClick = { navController.navigate("register") }
+                onLoginClick = { loginViewModel.login() },
+                onRegisterClick = { navController.navigate("register") },
+                onLoginSuccess = { uid ->
+                    navController.navigate("home/$uid") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
             )
         }
-        composable("register") { RegisterScreen(viewModel = registerViewModel, navController = navController) }
-        // composable("home") { HomeScreen() }
+        composable("register") {
+            RegisterScreen(
+                viewModel = registerViewModel,
+                navController = navController
+            )
+        }
+        composable(route = "home/{uid}") {
+            HomeScreen(
+                modifier = modifier,
+                viewModel = loginViewModel
+            )
+        }
     }
 }
 
