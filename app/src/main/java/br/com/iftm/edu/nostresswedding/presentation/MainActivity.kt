@@ -21,6 +21,7 @@ import br.com.iftm.edu.nostresswedding.presentation.screens.LoginScreen
 import br.com.iftm.edu.nostresswedding.presentation.screens.RegisterScreen
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginViewModel
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.RegisterViewModel
+import br.com.iftm.edu.nostresswedding.presentation.viewmodels.HomeViewModel
 import br.com.iftm.edu.nostresswedding.ui.theme.NoStressWeddingTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -39,10 +40,12 @@ class MainActivity : ComponentActivity() {
                     ) {
                         val registerViewModel = hiltViewModel<RegisterViewModel>()
                         val loginViewModel = hiltViewModel<LoginViewModel>()
+                        val homeViewModel = hiltViewModel<HomeViewModel>()
                         NoStressWeddingApp(
                             modifier = Modifier.fillMaxSize(),
                             registerViewModel = registerViewModel,
-                            loginViewModel = loginViewModel
+                            loginViewModel = loginViewModel,
+                            homeViewModel = homeViewModel
                         )
                     }
                 }
@@ -55,7 +58,8 @@ class MainActivity : ComponentActivity() {
 fun NoStressWeddingApp(
     modifier: Modifier = Modifier,
     registerViewModel: RegisterViewModel,
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    homeViewModel: HomeViewModel,
 ) {
     val navController = rememberNavController() // Controlador de navegação
 
@@ -65,7 +69,6 @@ fun NoStressWeddingApp(
     ) {
         // Define suas rotas aqui
         composable("login") {
-            val loginViewModel: LoginViewModel = hiltViewModel()
             LoginScreen(
                 modifier = modifier,
                 loginViewModel = loginViewModel,
@@ -87,7 +90,7 @@ fun NoStressWeddingApp(
         composable(route = "home/{uid}") {
             HomeScreen(
                 modifier = modifier,
-                viewModel = loginViewModel
+                viewModel = homeViewModel
             )
         }
     }

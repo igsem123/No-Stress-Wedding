@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginViewModel
+import br.com.iftm.edu.nostresswedding.presentation.viewmodels.HomeViewModel
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel) {
+fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -21,7 +21,7 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel) {
         // e exibir na tela inicial.
 
         // Exemplo de uso do uid para buscar informações do usuário
-        // val user = viewModel.getUserById(uid)
+        val user = viewModel
         // Text(text = "Bem-vindo, ${user.name}!")
     }
 }

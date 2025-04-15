@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "br.com.iftm.edu.nostresswedding"
-        minSdk = 24
+        minSdk = 27
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"

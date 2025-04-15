@@ -3,6 +3,7 @@ package br.com.iftm.edu.nostresswedding.data.mappers
 import br.com.iftm.edu.nostresswedding.data.local.entity.UserEntity
 import br.com.iftm.edu.nostresswedding.domain.models.UserDto
 import com.google.firebase.auth.FirebaseUser
+import com.google.firestore.v1.FirestoreGrpc
 
 /**
  * Mapeia um objeto [UserEntity] para um objeto [UserDto].

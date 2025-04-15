@@ -25,9 +25,25 @@ class LoginRepository @Inject constructor(
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener { result ->
                 val uid = result.user?.uid
-                val user = result.user?.toUserDto()
-                if (uid != null && user != null) {
-                    onSuccess(uid, user)
+                result.user?.let { user ->
+                    userRepository.getUserFromFirestore(
+                        uid = uid.toString(),
+                        onSuccess = { userMap ->
+                        userMap.map {
+                            val userDto = UserDto(
+                                uid = uid.toString(),
+                                name = userMap["name"] as String,
+                                email = userMap["email"] as String,
+                                phone = userMap["phone"] as String?,
+                                username = userMap["username"] as String?,
+                                weddingBudget = userMap["weddingBudget"] as String,
+                                weddingDate = userMap["weddingDate"] as String
+                            )
+                            onSuccess(uid.toString(), userDto)
+                        }
+                    }, onFailure = { exception ->
+                        onFailure(exception)
+                    })
                 }
             }
             .addOnFailureListener { exception ->

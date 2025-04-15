@@ -3,6 +3,7 @@ package br.com.iftm.edu.nostresswedding.data.repository
 import br.com.iftm.edu.nostresswedding.data.local.database.NSWeddingDatabase
 import br.com.iftm.edu.nostresswedding.data.local.entity.UserEntity
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.auth.User
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 
@@ -31,17 +32,17 @@ class UserRepository @Inject constructor(
             }
     }
 
-    suspend fun getUserFromRoom(uid: String): Map<String, Any>? {
+    suspend fun getUserFromRoom(uid: String): UserEntity? {
         val userEntity = db.userDao().getUserById(uid)
         return userEntity?.let {
-            mapOf(
-                "uid" to it.uid,
-                "username" to it.username,
-                "email" to it.email,
-                "phone" to it.phone,
-                "weddingDate" to it.weddingDate,
-                "weddingBudget" to it.weddingBudget,
-                "name" to it.name
+            UserEntity(
+                uid = it.uid,
+                email = it.email,
+                name = it.name,
+                phone = it.phone,
+                username = it.username,
+                weddingBudget = it.weddingBudget,
+                weddingDate = it.weddingDate
             )
         }
     }

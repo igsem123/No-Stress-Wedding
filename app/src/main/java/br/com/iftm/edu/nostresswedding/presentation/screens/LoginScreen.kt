@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -49,10 +50,9 @@ fun LoginScreen(
     onRegisterClick: () -> Unit = {},
     onLoginSuccess: (String) -> Unit = {},
 ) {
-     val state by loginViewModel.uiState.collectAsState()
+    val state by loginViewModel.uiState.collectAsState()
 
     when (state) {
-
         is LoginUiState.Error -> {
             val context = LocalContext.current
             Toast.makeText(
@@ -60,130 +60,32 @@ fun LoginScreen(
                 (state as LoginUiState.Error).message,
                 Toast.LENGTH_SHORT
             ).show()
-        }
 
-        is LoginUiState.Idle -> Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(color = Color.White),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Spacer(
-                modifier = Modifier.height(1.dp)
-            )
-            Image(
-                modifier = Modifier.padding(bottom = 16.dp),
-                painter = painterResource(id = R.drawable.no_stress_wedding_2_),
-                contentDescription = "Logo"
-            )
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                val email by loginViewModel.email.collectAsState()
-                val password by loginViewModel.password.collectAsState()
-
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { loginViewModel.updateEmail(it) },
-                    label = { Text(text = "E-mail", color = Pink40) },
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color(0xFFFA6E81),
-                        unfocusedIndicatorColor = Color(0xFFFA6E81),
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                    ),
-                    shape = MaterialTheme.shapes.large,
-                    placeholder = {
-                        Text(
-                            text = "Digite seu e-mail",
-                            color = Pink40,
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Person,
-                            contentDescription = "User",
-                            tint = Pink40,
-                            modifier = Modifier
-                                .size(22.dp)
-                        )
-                    }
-                )
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { loginViewModel.updatePassword(it) },
-                    label = { Text(text = "Senha", color = Pink40) },
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color(0xFFFA6E81),
-                        unfocusedIndicatorColor = Color(0xFFFA6E81),
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                    ),
-                    shape = MaterialTheme.shapes.large,
-                    placeholder = {
-                        Text(
-                            text = "Digite sua senha",
-                            color = Pink40,
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Lock,
-                            contentDescription = "Password",
-                            tint = Pink40,
-                            modifier = Modifier
-                                .size(22.dp)
-                        )
-                    },
-                    visualTransformation = PasswordVisualTransformation(),
-                )
-                TextButton(
-                    onClick = { onLoginClick() },
-                    modifier = Modifier.padding(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Pink40,
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowForward,
-                        contentDescription = "Fingerprint",
-                        tint = Pink40,
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .size(20.dp)
-                    )
-                    Text(
-                        text = "Entrar",
-                        style = MaterialTheme.typography.headlineSmall,
-                    )
+            // Reexibir o formulário de login
+            LoginForm(
+                modifier = modifier,
+                loginViewModel = loginViewModel,
+                onLoginClick = {
+                    loginViewModel.login()
+                    onLoginClick()
+                },
+                onRegisterClick = {
+                    onRegisterClick()
                 }
-            }
-            TextButton(
-                onClick = { onRegisterClick() },
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .width(220.dp)
-                    .border(
-                        width = 1.dp,
-                        color = Pink40,
-                        shape = MaterialTheme.shapes.extraLarge
-                    ),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Pink40
-                ),
-                shape = MaterialTheme.shapes.extraLarge
-            ) {
-                Text(
-                    text = "Não tem conta? Cadastre-se!",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            )
         }
+
+        is LoginUiState.Idle -> LoginForm(
+            modifier = modifier,
+            loginViewModel = loginViewModel,
+            onLoginClick = {
+                loginViewModel.login()
+                onLoginClick()
+            },
+            onRegisterClick = {
+                onRegisterClick()
+            }
+        )
 
         is LoginUiState.Loading -> Column(
             modifier = modifier
@@ -211,7 +113,142 @@ fun LoginScreen(
             onLoginSuccess((state as LoginUiState.Success).userId.toString())
         }
     }
+}
 
+@Composable
+fun LoginForm(
+    modifier: Modifier = Modifier,
+    loginViewModel: LoginViewModel,
+    onLoginClick: () -> Unit = {},
+    onRegisterClick: () -> Unit = {},
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(color = Color.White),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Spacer(
+            modifier = Modifier.height(1.dp)
+        )
+        Image(
+            modifier = Modifier.padding(bottom = 16.dp),
+            painter = painterResource(id = R.drawable.no_stress_wedding_2_),
+            contentDescription = "Logo"
+        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            val email by loginViewModel.email.collectAsState()
+            val password by loginViewModel.password.collectAsState()
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { loginViewModel.updateEmail(it) },
+                label = { Text(text = "E-mail", color = Pink40) },
+                modifier = Modifier
+                    .padding(bottom = 8.dp, start = 16.dp, end = 16.dp)
+                    .fillMaxWidth(0.8f),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color(0xFFFA6E81),
+                    unfocusedIndicatorColor = Color(0xFFFA6E81),
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                ),
+                shape = MaterialTheme.shapes.large,
+                placeholder = {
+                    Text(
+                        text = "Digite seu e-mail",
+                        color = Pink40,
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = "User",
+                        tint = Pink40,
+                        modifier = Modifier
+                            .size(22.dp)
+                    )
+                },
+                singleLine = true
+            )
+            OutlinedTextField(
+                value = password,
+                onValueChange = { loginViewModel.updatePassword(it) },
+                label = { Text(text = "Senha", color = Pink40) },
+                modifier = Modifier
+                    .padding(bottom = 8.dp, start = 16.dp, end = 16.dp)
+                    .fillMaxWidth(0.8f),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color(0xFFFA6E81),
+                    unfocusedIndicatorColor = Color(0xFFFA6E81),
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                ),
+                shape = MaterialTheme.shapes.large,
+                placeholder = {
+                    Text(
+                        text = "Digite sua senha",
+                        color = Pink40,
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Lock,
+                        contentDescription = "Password",
+                        tint = Pink40,
+                        modifier = Modifier
+                            .size(22.dp)
+                    )
+                },
+                visualTransformation = PasswordVisualTransformation(),
+            )
+            TextButton(
+                onClick = { onLoginClick() },
+                modifier = Modifier.padding(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Pink40,
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowForward,
+                    contentDescription = "Fingerprint",
+                    tint = Pink40,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(20.dp)
+                )
+                Text(
+                    text = "Entrar",
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            }
+        }
+        TextButton(
+            onClick = { onRegisterClick() },
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .width(220.dp)
+                .border(
+                    width = 1.dp,
+                    color = Pink40,
+                    shape = MaterialTheme.shapes.extraLarge
+                ),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = Pink40
+            ),
+            shape = MaterialTheme.shapes.extraLarge
+        ) {
+            Text(
+                text = "Não tem conta? Cadastre-se!",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
 }
 
 @Preview(
