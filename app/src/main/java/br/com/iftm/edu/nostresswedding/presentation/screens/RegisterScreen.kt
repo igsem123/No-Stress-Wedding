@@ -1,8 +1,8 @@
 package br.com.iftm.edu.nostresswedding.presentation.screens
 
-import android.os.Build
 import android.widget.Toast
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,20 +13,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Create
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,11 +33,18 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -48,22 +54,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import br.com.iftm.edu.nostresswedding.presentation.components.CustomOutlinedTextField
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.RegisterViewModel
+import br.com.iftm.edu.nostresswedding.presentation.viewmodels.UserRegistrationState
 import br.com.iftm.edu.nostresswedding.ui.theme.NoStressWeddingTheme
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import compose.icons.LineAwesomeIcons
 import compose.icons.lineawesomeicons.DollarSignSolid
-import compose.icons.lineawesomeicons.Registered
 import compose.icons.lineawesomeicons.User
 import compose.icons.lineawesomeicons.UserLockSolid
+import kotlinx.coroutines.flow.filterNotNull
+import java.time.Instant
+import java.time.ZoneId
+import java.util.Locale
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
@@ -71,17 +72,24 @@ fun RegisterScreen(
     viewModel: RegisterViewModel,
     navController: NavController
 ) {
-    val state by viewModel.uiState
+    val formState by viewModel.formState
+    val uiState = viewModel.userRegistrationState
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
-    if (state.success) {
-        LaunchedEffect(Unit) {
+    LaunchedEffect(uiState.value) {
+        if (uiState.value is UserRegistrationState.Error) {
+            val errorMessage = (uiState.value as UserRegistrationState.Error).message
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+        } else if (uiState.value is UserRegistrationState.Success) {
             Toast.makeText(
                 context,
                 "Usuário cadastrado com sucesso!",
                 Toast.LENGTH_SHORT
             ).show()
+
+            viewModel.clearForm()
+            viewModel.resetRegistrationState()
 
             navController.navigate("login") {
                 popUpTo("register") {
@@ -90,6 +98,7 @@ fun RegisterScreen(
             }
         }
     }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -99,11 +108,18 @@ fun RegisterScreen(
     ) {
         val dataPickerState = rememberDatePickerState()
 
-        viewModel.onFieldChange(
-            "weddingDate", dataPickerState.selectedDateMillis?.let {
-                LocalDateTime.ofEpochSecond(it, 0, ZoneOffset.UTC)
-            }.toString()
-        )
+        LaunchedEffect(dataPickerState) {
+            snapshotFlow { dataPickerState.selectedDateMillis }
+                .filterNotNull()
+                .collect { millis ->
+                    val date = Instant.ofEpochMilli(millis)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                        .toString()
+                    viewModel.onFieldChange("weddingDate", date)
+                }
+        }
+
 
         Box(
             modifier = Modifier
@@ -129,7 +145,7 @@ fun RegisterScreen(
             }
         }
         CustomOutlinedTextField(
-            value = state.name,
+            value = formState.name,
             onValueChange = { viewModel.onFieldChange("name", it) },
             label = "Nome",
             placeholder = "Digite seu nome",
@@ -147,7 +163,7 @@ fun RegisterScreen(
             )
         )
         CustomOutlinedTextField(
-            value = state.username,
+            value = formState.username,
             onValueChange = { viewModel.onFieldChange("username", it) },
             label = "E-mail",
             placeholder = "Digite seu e-mail",
@@ -164,7 +180,7 @@ fun RegisterScreen(
             )
         )
         CustomOutlinedTextField(
-            value = state.password,
+            value = formState.password,
             onValueChange = { viewModel.onFieldChange("password", it) },
             label = "Senha",
             placeholder = "Digite sua senha",
@@ -181,7 +197,7 @@ fun RegisterScreen(
             )
         )
         CustomOutlinedTextField(
-            value = state.confirmPassword,
+            value = formState.confirmPassword,
             onValueChange = { viewModel.onFieldChange("confirmPassword", it) },
             label = "Confirmar Senha",
             placeholder = "Confirme sua senha",
@@ -199,7 +215,7 @@ fun RegisterScreen(
                 }
             ),
             supportingText = {
-                if (!viewModel.isPasswordEqual() && state.confirmPassword.isNotEmpty()) {
+                if (!viewModel.isPasswordEqual() && formState.confirmPassword.isNotEmpty()) {
                     Text(
                         text = "As senhas não coincidem!",
                         color = MaterialTheme.colorScheme.error,
@@ -208,16 +224,21 @@ fun RegisterScreen(
                 }
             }
         )
+
+        val dateFormatter = remember {
+            DatePickerDefaults.dateFormatter(
+                yearSelectionSkeleton = "yMMMM",
+                selectedDateSkeleton = "yMMMd",
+                selectedDateDescriptionSkeleton = "EEEE, d 'de' MMMM 'de' y" // "quarta-feira, 7 de maio de 2025"
+            )
+        }
+
         DatePicker(
             state = dataPickerState,
-            dateFormatter = remember {
-                DatePickerDefaults.dateFormatter(
-                    yearSelectionSkeleton = "YYYY",
-                    selectedDateSkeleton = "mm",
-                    selectedDateDescriptionSkeleton = "dd"
-                )
-            },
-            modifier = Modifier.padding(horizontal = 24.dp),
+            dateFormatter = dateFormatter,
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .clip(RoundedCornerShape(24.dp)),
             title = {
                 Text(
                     text = "Qual a data do seu casamento?",
@@ -230,23 +251,34 @@ fun RegisterScreen(
                 )
             },
             headline = {
-                Text(
-                    text = "Alterar modo de exibição:",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                )
+                Column {
+                    Text(
+                        text = "Alterar modo de exibição:",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                    )
+                    DatePickerDefaults.DatePickerHeadline(
+                        selectedDateMillis = dataPickerState.selectedDateMillis,
+                        displayMode = DisplayMode.Input,
+                        dateFormatter = dateFormatter,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                    )
+                }
             },
             colors = DatePickerDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 weekdayContentColor = MaterialTheme.colorScheme.primary,
                 subheadContentColor = MaterialTheme.colorScheme.primary
             )
         )
+
         CustomOutlinedTextField(
-            value = state.weddingBudget.toString(),
+            value = formState.weddingBudget.toString(),
             onValueChange = { viewModel.onFieldChange("weddingBudget", it) },
             label = "Orçamento do Casamento",
             placeholder = "Digite o valor do orçamento",
@@ -273,7 +305,7 @@ fun RegisterScreen(
             textAlign = TextAlign.Center
         )
 
-        if (state.isLoading) {
+        if (uiState.value is UserRegistrationState.Loading) {
             CircularProgressIndicator(
                 modifier = Modifier
                     .padding(16.dp)
@@ -302,13 +334,13 @@ fun RegisterScreen(
             }
         }
 
-        state.error?.let {
+        if (uiState.value is UserRegistrationState.Error) {
             Text(
-                text = it,
+                text = (uiState.value as UserRegistrationState.Error).message,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.error, CircleShape)
                     .padding(16.dp),
                 textAlign = TextAlign.Center
             )
@@ -318,7 +350,6 @@ fun RegisterScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 private fun RegisterScreenPreview() {

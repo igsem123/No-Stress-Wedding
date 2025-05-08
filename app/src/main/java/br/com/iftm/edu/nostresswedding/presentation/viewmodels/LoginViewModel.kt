@@ -2,6 +2,7 @@ package br.com.iftm.edu.nostresswedding.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.iftm.edu.nostresswedding.data.mappers.toUserDto
 import br.com.iftm.edu.nostresswedding.data.mappers.toUserEntity
 import br.com.iftm.edu.nostresswedding.data.repository.LoginRepository
 import br.com.iftm.edu.nostresswedding.data.repository.UserRepository

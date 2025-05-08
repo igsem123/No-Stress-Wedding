@@ -24,9 +24,9 @@ class HomeViewModel @Inject constructor(
     fun getUserDataFromRoom(
         uid: String
     ) {
-        /*viewModelScope.launch(Dispatchers.IO) {
-            _user = userRepository.getUserFromRoom(uid)
-        }*/
+        viewModelScope.launch(Dispatchers.IO) {
+            _user.value = userRepository.getUserFromRoom(uid)
+        }
     }
 
     fun logout() {

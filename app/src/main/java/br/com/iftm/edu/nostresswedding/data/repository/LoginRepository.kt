@@ -29,21 +29,21 @@ class LoginRepository @Inject constructor(
                     userRepository.getUserFromFirestore(
                         uid = uid.toString(),
                         onSuccess = { userMap ->
-                        userMap.map {
-                            val userDto = UserDto(
-                                uid = uid.toString(),
-                                name = userMap["name"] as String,
-                                email = userMap["email"] as String,
-                                phone = userMap["phone"] as String?,
-                                username = userMap["username"] as String?,
-                                weddingBudget = userMap["weddingBudget"] as String,
-                                weddingDate = userMap["weddingDate"] as String
-                            )
-                            onSuccess(uid.toString(), userDto)
-                        }
-                    }, onFailure = { exception ->
-                        onFailure(exception)
-                    })
+                            userMap.map {
+                                val userDto = UserDto(
+                                    uid = uid.toString(),
+                                    name = userMap["name"] as String,
+                                    email = userMap["email"] as String,
+                                    phone = userMap["phone"] as String?,
+                                    username = userMap["username"] as String?,
+                                    weddingBudget = userMap["weddingBudget"] as String,
+                                    weddingDate = userMap["weddingDate"] as String
+                                )
+                                onSuccess(uid.toString(), userDto)
+                            }
+                        }, onFailure = { exception ->
+                            onFailure(exception)
+                        })
                 }
             }
             .addOnFailureListener { exception ->

@@ -21,35 +21,38 @@ class RegisterViewModel @Inject constructor(
     private val repository: RegisterRepository
 ): ViewModel() {
 
-    private val _uiState = mutableStateOf(RegisterUiState())
-    val uiState: State<RegisterUiState> = _uiState
+    private val _formState = mutableStateOf(RegisterUiState())
+    val formState: State<RegisterUiState> = _formState
+
+    private val _userRegistrationState = mutableStateOf<UserRegistrationState>(UserRegistrationState.Idle)
+    val userRegistrationState: State<UserRegistrationState> = _userRegistrationState
 
     fun onFieldChange(field: String, value: String) {
-        _uiState.value = when (field) {
-            "username" -> _uiState.value.copy(username = value)
-            "password" -> _uiState.value.copy(password = value)
-            "confirmPassword" -> _uiState.value.copy(confirmPassword = value)
-            "name" -> _uiState.value.copy(name = value)
-            "weddingDate" -> _uiState.value.copy(weddingDate = value)
-            "weddingBudget" -> _uiState.value.copy(weddingBudget = value)
-            else -> _uiState.value
+        _formState.value = when (field) {
+            "username" -> _formState.value.copy(username = value)
+            "password" -> _formState.value.copy(password = value)
+            "confirmPassword" -> _formState.value.copy(confirmPassword = value)
+            "name" -> _formState.value.copy(name = value)
+            "weddingDate" -> _formState.value.copy(weddingDate = value)
+            "weddingBudget" -> _formState.value.copy(weddingBudget = value)
+            else -> _formState.value
         }
     }
 
     fun isPasswordEqual(): Boolean {
-        return _uiState.value.password == _uiState.value.confirmPassword
+        return _formState.value.password == _formState.value.confirmPassword
     }
 
     fun registerUser() {
-        with(_uiState.value) {
+        with(_formState.value) {
             if (username.isBlank() || password.isBlank() || name.isBlank() ||
                 weddingDate.isBlank() || weddingBudget.isBlank()
             ) {
-                _uiState.value = _uiState.value.copy(error = "Preencha todos os campos corretamente!")
+                _userRegistrationState.value = UserRegistrationState.Error("Preencha todos os campos corretamente!")
                 return
             }
 
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+           _userRegistrationState.value = UserRegistrationState.Loading
 
             repository.createUserInFirebase(username, password, { uid ->
                 val userEntity = UserEntity(
@@ -63,20 +66,24 @@ class RegisterViewModel @Inject constructor(
                 repository.saveUserInFirestore(uid, userEntity, {
                     viewModelScope.launch(Dispatchers.IO) {
                         repository.saveUserInRoom(userEntity)
-                        _uiState.value = _uiState.value.copy(isLoading = false, success = true)
+                        _userRegistrationState.value = UserRegistrationState.Success(uid)
                     }
-                    clearState()
+                    clearForm()
                 }, { exception ->
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = exception.message)
+                    _userRegistrationState.value = UserRegistrationState.Error(exception.message ?: "Erro ao salvar usuário no banco de dados!")
                 })
             }, { exception ->
-                _uiState.value = _uiState.value.copy(isLoading = false, error = exception.message)
+                _userRegistrationState.value = UserRegistrationState.Error(exception.message ?: "Erro ao criar usuário!")
             })
         }
     }
 
-    fun clearState() {
-        _uiState.value = RegisterUiState()
+    fun clearForm() {
+        _formState.value = RegisterUiState()
+    }
+
+    fun resetRegistrationState() {
+        _userRegistrationState.value = UserRegistrationState.Idle
     }
 }
 
@@ -86,8 +93,12 @@ data class RegisterUiState(
     val confirmPassword: String = "",
     val name: String = "",
     val weddingDate: String = "",
-    val weddingBudget: String = "",
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val success: Boolean = false
+    val weddingBudget: String = ""
 )
+
+sealed class UserRegistrationState {
+    object Idle : UserRegistrationState()
+    object Loading : UserRegistrationState()
+    data class Success(val userId: String) : UserRegistrationState()
+    data class Error(val message: String) : UserRegistrationState()
+}
