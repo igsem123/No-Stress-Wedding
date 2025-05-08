@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "br.com.iftm.edu.nostresswedding"
-        minSdk = 24
+        minSdk = 27
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -92,6 +92,10 @@ dependencies {
 
     // Google Fonts
     implementation (libs.androidx.ui.text.google.fonts)
+
+    // Icons
+    implementation(libs.font.awesome)
+    implementation(libs.line.awesome)
 }
 
 kapt {
