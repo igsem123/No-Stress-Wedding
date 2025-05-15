@@ -3,7 +3,6 @@
 package br.com.iftm.edu.nostresswedding.presentation
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -136,6 +135,7 @@ fun NoStressWeddingApp(
 
                     viewmodel.getUserDataFromRoom(uid)
                     val user by viewmodel.user.collectAsState()
+                    val remainingDaysPhrase = viewmodel.getCountTillWeddingDayInString(user?.weddingDate ?: "")
                     HomeScreen(
                         modifier = modifier,
                         user = user,
@@ -145,6 +145,7 @@ fun NoStressWeddingApp(
                                 popUpTo("home/$uid") { inclusive = true }
                             }
                         },
+                        remainingDaysPhrase = remainingDaysPhrase
                     )
                 }
             }
