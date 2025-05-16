@@ -3,6 +3,8 @@ package br.com.iftm.edu.nostresswedding.di
 import android.app.Application
 import androidx.room.Room
 import br.com.iftm.edu.nostresswedding.data.local.database.NSWeddingDatabase
+import br.com.iftm.edu.nostresswedding.data.repository.TaskRepository
+import br.com.iftm.edu.nostresswedding.data.repository.TaskRepositoryImpl
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
@@ -33,5 +35,13 @@ class AppModule {
     @Singleton
     fun provideFirestoreDatabase(application: Application): FirebaseFirestore {
         return FirebaseFirestore.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTaskRepository(
+        db: NSWeddingDatabase
+    ): TaskRepository {
+        return TaskRepositoryImpl(db)
     }
 }

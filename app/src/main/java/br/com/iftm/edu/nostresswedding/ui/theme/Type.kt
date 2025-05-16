@@ -20,6 +20,10 @@ val skillet = FontFamily(
     Font(R.font.skillet_condensed)
 )
 
+val gotu = FontFamily(
+    Font(R.font.gotu)
+)
+
 val montSerrat = FontFamily(
     Font(
         googleFont = GoogleFont("Montserrat"),
@@ -51,21 +55,21 @@ val Typography = Typography(
         letterSpacing = 0.4.sp
     ),
     titleLarge = TextStyle(
-        fontFamily = skillet,
+        fontFamily = gotu,
         fontWeight = FontWeight.Normal,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = skillet,
+        fontFamily = gotu,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = skillet,
+        fontFamily = gotu,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,

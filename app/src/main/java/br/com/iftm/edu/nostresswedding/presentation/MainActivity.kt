@@ -3,7 +3,6 @@
 package br.com.iftm.edu.nostresswedding.presentation
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -30,18 +29,20 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.com.iftm.edu.nostresswedding.NoStressWeddingApp
 import br.com.iftm.edu.nostresswedding.R
 import br.com.iftm.edu.nostresswedding.presentation.screens.HomeScreen
 import br.com.iftm.edu.nostresswedding.presentation.screens.LoginScreen
 import br.com.iftm.edu.nostresswedding.presentation.screens.RegisterScreen
+import br.com.iftm.edu.nostresswedding.presentation.screens.TopAppBarExpandable
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.HomeViewModel
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginViewModel
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.RegisterViewModel
 import br.com.iftm.edu.nostresswedding.ui.theme.NoStressWeddingTheme
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.navigation.compose.currentBackStackEntryAsState
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -73,6 +74,11 @@ fun NoStressWeddingApp(
     val currentRoute = navBackStackEntry?.destination?.route
 
     val isShowTopBarWithBackAction = currentRoute == "register"
+    val isShowTopBarExpandable = when (currentRoute) {
+        "home/{uid}" -> true
+        "login" -> false
+        else -> false
+    }
 
     Column {
         if (isShowTopBarWithBackAction) {
@@ -99,6 +105,19 @@ fun NoStressWeddingApp(
             )
         }
 
+        val userViewModel: HomeViewModel = hiltViewModel()
+        userViewModel.getUserDataFromRoom(FirebaseAuth.getInstance().uid.toString())
+        val user by userViewModel.user.collectAsState()
+        val logout = {
+            userViewModel.logout()
+            navController.navigate("login") {
+                popUpTo("home/${user?.uid}") { inclusive = true }
+            }
+        }
+
+        if (isShowTopBarExpandable) {
+            TopAppBarExpandable(user = user, logout = logout)
+        }
 
         Box(
             modifier = modifier
@@ -133,18 +152,14 @@ fun NoStressWeddingApp(
                 composable(route = "home/{uid}") {
                     val uid = it.arguments?.getString("uid") ?: ""
                     val viewmodel: HomeViewModel = hiltViewModel()
-
-                    viewmodel.getUserDataFromRoom(uid)
-                    val user by viewmodel.user.collectAsState()
+                    viewmodel.getTasksByUserId(uid)
+                    val remainingDaysPhrase =
+                        viewmodel.getCountTillWeddingDayInString(user?.weddingDate ?: "")
                     HomeScreen(
                         modifier = modifier,
                         user = user,
-                        logout = {
-                            viewmodel.logout()
-                            navController.navigate("login") {
-                                popUpTo("home/$uid") { inclusive = true }
-                            }
-                        },
+                        remainingDaysPhrase = remainingDaysPhrase,
+                        viewmodel = viewmodel
                     )
                 }
             }
