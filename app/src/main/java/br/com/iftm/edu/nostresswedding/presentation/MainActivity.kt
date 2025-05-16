@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,6 +34,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.com.iftm.edu.nostresswedding.NoStressWeddingApp
 import br.com.iftm.edu.nostresswedding.R
+import br.com.iftm.edu.nostresswedding.data.local.entity.UserEntity
 import br.com.iftm.edu.nostresswedding.presentation.screens.HomeScreen
 import br.com.iftm.edu.nostresswedding.presentation.screens.LoginScreen
 import br.com.iftm.edu.nostresswedding.presentation.screens.RegisterScreen
@@ -48,19 +50,17 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
-            NoStressWeddingTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
-                        NoStressWeddingApp(modifier = Modifier)
-                    }
-                }
-            }
+            val userViewModel: HomeViewModel = hiltViewModel()
+            userViewModel.getUserDataFromRoom(FirebaseAuth.getInstance().uid.toString())
+            val user by userViewModel.user.collectAsState()
+            NoStressWeddingApp(
+                modifier = Modifier,
+                userViewModel = userViewModel,
+                user = user
+            )
         }
     }
 }
@@ -68,99 +68,107 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NoStressWeddingApp(
     modifier: Modifier = Modifier,
+    userViewModel: HomeViewModel,
+    user: UserEntity? = null
 ) {
     val navController = rememberNavController() // Controlador de navegação
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
     val isShowTopBarWithBackAction = currentRoute == "register"
     val isShowTopBarExpandable = when (currentRoute) {
         "home/{uid}" -> true
         "login" -> false
         else -> false
     }
-
-    Column {
-        if (isShowTopBarWithBackAction) {
-            TopAppBar(
-                title = {
-                    Image(
-                        painter = painterResource(R.drawable.ic_login),
-                        contentDescription = "Logo",
-                        Modifier.size(56.dp)
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Ícone de voltar"
-                        )
-                    }
-                }
-            )
+    val logout = {
+        userViewModel.logout()
+        navController.navigate("login") {
+            popUpTo("home/${user?.uid}") { inclusive = true }
         }
+    }
 
-        val userViewModel: HomeViewModel = hiltViewModel()
-        userViewModel.getUserDataFromRoom(FirebaseAuth.getInstance().uid.toString())
-        val user by userViewModel.user.collectAsState()
-        val logout = {
-            userViewModel.logout()
-            navController.navigate("login") {
-                popUpTo("home/${user?.uid}") { inclusive = true }
-            }
-        }
-
-        if (isShowTopBarExpandable) {
-            TopAppBarExpandable(user = user, logout = logout)
-        }
-
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-        ) {
-            NavHost(
-                navController = navController,
-                startDestination = "login"
+    NoStressWeddingTheme {
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            Column(
+                modifier = modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
             ) {
-                // Define suas rotas aqui
-                composable("login") {
-                    val viewModel: LoginViewModel = hiltViewModel()
-                    LoginScreen(
-                        modifier = modifier,
-                        loginViewModel = viewModel,
-                        onLoginClick = { viewModel.login() },
-                        onRegisterClick = { navController.navigate("register") },
-                        onLoginSuccess = { uid ->
-                            navController.navigate("home/$uid") {
-                                popUpTo("login") { inclusive = true }
+                if (isShowTopBarWithBackAction) {
+                    TopAppBar(
+                        title = {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_login),
+                                contentDescription = "Logo",
+                                modifier = Modifier
+                                    .size(40.dp)
+                            )
+                        },
+                        navigationIcon = {
+                            IconButton(
+                                onClick = {
+                                    navController.popBackStack()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                    contentDescription = "Ícone de voltar"
+                                )
                             }
                         }
                     )
                 }
-                composable("register") {
-                    val viewModel: RegisterViewModel = hiltViewModel()
-                    RegisterScreen(
-                        viewModel = viewModel,
-                        navController = navController
-                    )
+
+
+                if (isShowTopBarExpandable) {
+                    TopAppBarExpandable(user = user, logout = logout)
                 }
-                composable(route = "home/{uid}") {
-                    val uid = it.arguments?.getString("uid") ?: ""
-                    val viewmodel: HomeViewModel = hiltViewModel()
-                    viewmodel.getTasksByUserId(uid)
-                    val remainingDaysPhrase =
-                        viewmodel.getCountTillWeddingDayInString(user?.weddingDate ?: "")
-                    HomeScreen(
-                        modifier = modifier,
-                        user = user,
-                        remainingDaysPhrase = remainingDaysPhrase,
-                        viewmodel = viewmodel
-                    )
+
+                Box(
+                    modifier = modifier
+                        .fillMaxSize()
+                ) {
+                    NavHost(
+                        navController = navController,
+                        startDestination = "login"
+                    ) {
+                        // Define suas rotas aqui
+                        composable("login") {
+                            val viewModel: LoginViewModel = hiltViewModel()
+                            LoginScreen(
+                                modifier = modifier,
+                                loginViewModel = viewModel,
+                                onLoginClick = { viewModel.login() },
+                                onRegisterClick = { navController.navigate("register") },
+                                onLoginSuccess = { uid ->
+                                    navController.navigate("home/$uid") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+                        composable("register") {
+                            val viewModel: RegisterViewModel = hiltViewModel()
+                            RegisterScreen(
+                                viewModel = viewModel,
+                                navController = navController
+                            )
+                        }
+                        composable(route = "home/{uid}") {
+                            val uid = it.arguments?.getString("uid") ?: ""
+                            userViewModel.getTasksByUserId(uid)
+                            val remainingDaysPhrase =
+                                userViewModel.getCountTillWeddingDayInString(
+                                    user?.weddingDate ?: ""
+                                )
+                            HomeScreen(
+                                modifier = modifier,
+                                user = user,
+                                remainingDaysPhrase = remainingDaysPhrase,
+                                viewmodel = userViewModel
+                            )
+                        }
+                    }
                 }
             }
         }
