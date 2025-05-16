@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,6 +42,7 @@ import br.com.iftm.edu.nostresswedding.R
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginUiState
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginViewModel
 import br.com.iftm.edu.nostresswedding.ui.theme.Pink40
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun LoginScreen(
@@ -50,6 +52,14 @@ fun LoginScreen(
     onRegisterClick: () -> Unit = {},
     onLoginSuccess: (String) -> Unit = {},
 ) {
+    LaunchedEffect(Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            // Pular para a Home automaticamente
+            onLoginSuccess(currentUser.uid)
+        }
+    }
+
     val state by loginViewModel.uiState.collectAsState()
 
     when (state) {
