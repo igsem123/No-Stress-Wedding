@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "tasks",
+@Entity(tableName = "guests",
     foreignKeys = [
         ForeignKey(
             entity = UserEntity::class,
@@ -14,12 +14,10 @@ import androidx.room.PrimaryKey
         )
     ]
 )
-class TaskEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0L,
-    val title: String = "",
-    val description: String = "",
-    var isCompleted: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis(),
-    val userId: String = "",
+data class GuestEntity(
+    @PrimaryKey val id: Long,
+    val name: String,
+    val phone: String,
+    val isConfirmed: Boolean,
+    val userId: String
 )
