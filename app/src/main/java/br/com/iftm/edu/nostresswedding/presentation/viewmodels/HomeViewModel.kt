@@ -63,6 +63,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Busca as tarefas do usuário pelo ID.
+     * @param uid ID do usuário.
+     */
     fun getTasksByUserId(uid: String) {
         viewModelScope.launch(Dispatchers.IO) {
             taskRepository.getTasksByUserId(uid).collect { tasksList ->
