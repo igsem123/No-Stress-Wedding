@@ -3,6 +3,7 @@ package br.com.iftm.edu.nostresswedding.data.repository
 import br.com.iftm.edu.nostresswedding.data.local.database.NSWeddingDatabase
 import br.com.iftm.edu.nostresswedding.data.local.entity.TaskEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class TaskRepositoryImpl @Inject constructor(
@@ -32,19 +33,21 @@ class TaskRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override fun getTasksByUserId(userId: String): Flow<List<TaskEntity>> {
-        return try {
+    override suspend fun getTasksByUserId(userId: String): Flow<List<TaskEntity>> = flow {
+        val tasks =  try {
             db.taskDao().getTasksByUserId(userId)
         } catch (e: Exception) {
             throw e
         }
+
+        emit(tasks)
     }
 
-    override fun getCompletedTasks(): Flow<List<TaskEntity>> {
+    override suspend fun getCompletedTasks(): Flow<List<TaskEntity>> {
         TODO("Not yet implemented")
     }
 
-    override fun getPendingTasks(): Flow<List<TaskEntity>> {
+    override suspend fun getPendingTasks(): Flow<List<TaskEntity>> {
         TODO("Not yet implemented")
     }
 }

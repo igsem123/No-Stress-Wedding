@@ -8,7 +8,7 @@ interface TaskRepository {
     suspend fun updateTask(task: TaskEntity)
     suspend fun updateTaskStatus(task: TaskEntity)
     suspend fun deleteTask(task: TaskEntity)
-    fun getTasksByUserId(userId: String): Flow<List<TaskEntity>>
-    fun getCompletedTasks(): Flow<List<TaskEntity>>
-    fun getPendingTasks(): Flow<List<TaskEntity>>
+    suspend fun getTasksByUserId(userId: String): Flow<List<TaskEntity>>
+    suspend fun getCompletedTasks(): Flow<List<TaskEntity>>
+    suspend fun getPendingTasks(): Flow<List<TaskEntity>>
 }
