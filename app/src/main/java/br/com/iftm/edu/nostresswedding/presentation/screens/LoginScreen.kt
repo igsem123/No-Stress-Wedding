@@ -13,10 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -43,6 +39,10 @@ import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginUiState
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginViewModel
 import br.com.iftm.edu.nostresswedding.ui.theme.Pink40
 import com.google.firebase.auth.FirebaseAuth
+import compose.icons.LineAwesomeIcons
+import compose.icons.lineawesomeicons.ArrowRightSolid
+import compose.icons.lineawesomeicons.LockSolid
+import compose.icons.lineawesomeicons.UserSolid
 
 @Composable
 fun LoginScreen(
@@ -50,13 +50,13 @@ fun LoginScreen(
     loginViewModel: LoginViewModel,
     onLoginClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {},
-    onLoginSuccess: (String) -> Unit = {},
+    onLoginSuccess: () -> Unit = {},
 ) {
     LaunchedEffect(Unit) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
             // Pular para a Home automaticamente
-            onLoginSuccess(currentUser.uid)
+            onLoginSuccess()
         }
     }
 
@@ -120,7 +120,7 @@ fun LoginScreen(
 
         is LoginUiState.Success -> {
             // Navegar para a tela inicial
-            onLoginSuccess((state as LoginUiState.Success).userId.toString())
+            onLoginSuccess()
         }
     }
 }
@@ -175,7 +175,7 @@ fun LoginForm(
                 },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Outlined.Person,
+                        imageVector = LineAwesomeIcons.UserSolid,
                         contentDescription = "User",
                         tint = Pink40,
                         modifier = Modifier
@@ -206,7 +206,7 @@ fun LoginForm(
                 },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Outlined.Lock,
+                        imageVector = LineAwesomeIcons.LockSolid,
                         contentDescription = "Password",
                         tint = Pink40,
                         modifier = Modifier
@@ -224,7 +224,7 @@ fun LoginForm(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Filled.ArrowForward,
+                    imageVector = LineAwesomeIcons.ArrowRightSolid,
                     contentDescription = "Fingerprint",
                     tint = Pink40,
                     modifier = Modifier

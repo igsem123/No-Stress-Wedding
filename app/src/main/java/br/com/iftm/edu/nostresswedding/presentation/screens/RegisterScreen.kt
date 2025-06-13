@@ -18,9 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -58,6 +55,8 @@ import br.com.iftm.edu.nostresswedding.presentation.viewmodels.UserRegistrationS
 import br.com.iftm.edu.nostresswedding.ui.theme.NoStressWeddingTheme
 import compose.icons.LineAwesomeIcons
 import compose.icons.lineawesomeicons.DollarSignSolid
+import compose.icons.lineawesomeicons.Envelope
+import compose.icons.lineawesomeicons.LockSolid
 import compose.icons.lineawesomeicons.User
 import compose.icons.lineawesomeicons.UserLockSolid
 import kotlinx.coroutines.flow.filterNotNull
@@ -167,7 +166,7 @@ fun RegisterScreen(
             onValueChange = { viewModel.onFieldChange("username", it) },
             label = "E-mail",
             placeholder = "Digite seu e-mail",
-            icon = Icons.Outlined.Email,
+            icon = LineAwesomeIcons.Envelope,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
@@ -184,7 +183,7 @@ fun RegisterScreen(
             onValueChange = { viewModel.onFieldChange("password", it) },
             label = "Senha",
             placeholder = "Digite sua senha",
-            icon = Icons.Outlined.Lock,
+            icon = LineAwesomeIcons.LockSolid,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,

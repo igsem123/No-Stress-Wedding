@@ -1,6 +1,4 @@
-*.iml
-.gradle
-/local.properties
+# Ignorar arquivos de configuração do Android Studio e IntelliJ IDEA
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -8,8 +6,33 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
-/build
-/captures
 .externalNativeBuild
 .cxx
+
+# Arquivos de Build
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+build/
+/build
+
+# Arquivos gerados pelo Android Studio / IntelliJ
+.idea/
+*.iml
 local.properties
+/local.properties
+
+# Arquivos do Gradle (não o wrapper)
+.gradle/
+.gradle
+.idea/gradle.xml
+
+# Outros
+/captures
+captures/
+*.log
+
+# Ignorar deploymentTargetSelector
+.idea/deploymentTargetSelector.xml (exemplo de nome de arquivo)

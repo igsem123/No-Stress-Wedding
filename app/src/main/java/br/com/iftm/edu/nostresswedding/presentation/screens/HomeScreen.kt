@@ -2,6 +2,7 @@ package br.com.iftm.edu.nostresswedding.presentation.screens
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,11 +22,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,21 +57,25 @@ import br.com.iftm.edu.nostresswedding.presentation.components.TaskCard
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.HomeViewModel
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.TaskInsertState
 import compose.icons.LineAwesomeIcons
+import compose.icons.lineawesomeicons.ArrowDownSolid
 import compose.icons.lineawesomeicons.ClockSolid
 import compose.icons.lineawesomeicons.PlusSolid
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
-    user: UserEntity?,
-    remainingDaysPhrase: String,
     viewmodel: HomeViewModel,
 ) {
     var showFormDialog by remember { mutableStateOf(false) }
     val tasks by viewmodel.tasks.collectAsState()
+    val user by viewmodel.user.collectAsState()
+    val remainingDaysPhrase = viewmodel.getCountTillWeddingDayInString(user?.weddingDate ?: "")
+
+    LaunchedEffect(Unit) {
+        viewmodel.getTasksByUserId(user?.uid ?: "")
+    }
 
     LazyColumn(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
         state = rememberLazyListState(),
@@ -156,13 +162,16 @@ fun HomeScreen(
                 }
             )
         }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp)) // Espaço extra no final da lista
+        }
     }
 
     if (showFormDialog) {
         Dialog(
             onDismissRequest = {
                 showFormDialog = false
-                viewmodel.clearTaskInsertState()
             }
         ) {
             FormBoxTask(
@@ -174,6 +183,7 @@ fun HomeScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun FormBoxTask(viewmodel: HomeViewModel, user: UserEntity? = null, showFormDialog: () -> Unit) {
     var taskTitle by rememberSaveable { mutableStateOf("") }
@@ -278,16 +288,21 @@ fun FormBoxTask(viewmodel: HomeViewModel, user: UserEntity? = null, showFormDial
                 contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
-            when (taskInsertState) {
-                is TaskInsertState.Loading -> { CircularProgressIndicator() }
-                is TaskInsertState.Success -> { showFormDialog() }
-                else -> {
-                    Text(
-                        text = "Adicionar Tarefa",
-                        style = MaterialTheme.typography.titleLarge,
-                        textAlign = TextAlign.Center
-                    )
+            LaunchedEffect(taskInsertState) {
+                if (taskInsertState is TaskInsertState.Success) {
+                    showFormDialog()
+                    viewmodel.clearTaskInsertState()
                 }
+            }
+
+            if (taskInsertState is TaskInsertState.Loading) {
+                CircularWavyProgressIndicator()
+            } else {
+                Text(
+                    text = "Adicionar Tarefa",
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -298,9 +313,18 @@ fun TopAppBarExpandable(
     user: UserEntity?,
     logout: () -> Unit = {}
 ) {
-    val maxHeight = 300.dp
-    val minHeight = 48.dp
+    val maxHeight = 260.dp
+    val minHeight = 108.dp
     var isExpanded by remember { mutableStateOf(false) }
+
+    val pulseAnimation = animateFloatAsState(
+        targetValue = if (isExpanded) 1.2f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(durationMillis = 1000),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        ),
+        label = "PulseAnimation"
+    )
 
     val appBarHeight by animateDpAsState(
         targetValue = if (isExpanded) maxHeight else minHeight,
@@ -323,12 +347,26 @@ fun TopAppBarExpandable(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 28.dp)
         ) {
             if (isExpanded) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(0.4f))
+                        .border(
+                            width = 2.dp,
+                            color = Color.White.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .padding(16.dp)
                 ) {
                     Text(
                         text = "Informações do Usuário",
@@ -344,15 +382,18 @@ fun TopAppBarExpandable(
             } else {
                 Image(
                     painter = painterResource(R.drawable.ic_login),
-                    contentDescription = "Logo"
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(52.dp),
                 )
             }
 
             Icon(
-                imageVector = Icons.Outlined.KeyboardArrowDown,
+                imageVector = LineAwesomeIcons.ArrowDownSolid,
                 contentDescription = if (isExpanded) "Recolher" else "Expandir",
                 modifier = Modifier
-                    .rotate(rotationAngle),
+                    .rotate(rotationAngle)
+                    .size(20.dp * pulseAnimation.value),
                 tint = Color.White
             )
         }

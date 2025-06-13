@@ -9,6 +9,7 @@ import javax.inject.Inject
 class TaskRepositoryImpl @Inject constructor(
     private val db: NSWeddingDatabase
 ) : TaskRepository {
+
     override suspend fun insertTask(task: TaskEntity) {
         try {
             db.taskDao().insertTask(task)
@@ -33,14 +34,8 @@ class TaskRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun getTasksByUserId(userId: String): Flow<List<TaskEntity>> = flow {
-        val tasks =  try {
-            db.taskDao().getTasksByUserId(userId)
-        } catch (e: Exception) {
-            throw e
-        }
-
-        emit(tasks)
+    override fun getTasksByUserId(userId: String): Flow<List<TaskEntity>> {
+        return db.taskDao().getTasksByUserId(userId)
     }
 
     override suspend fun getCompletedTasks(): Flow<List<TaskEntity>> {

@@ -14,7 +14,7 @@ interface TaskDao {
     suspend fun insertTask(task: TaskEntity)
 
     @Query("SELECT * FROM tasks WHERE userId = :userId")
-    suspend fun getTasksByUserId(userId: String): List<TaskEntity>
+    fun getTasksByUserId(userId: String): Flow<List<TaskEntity>>
 
     @Update
     suspend fun updateTask(task: TaskEntity)
