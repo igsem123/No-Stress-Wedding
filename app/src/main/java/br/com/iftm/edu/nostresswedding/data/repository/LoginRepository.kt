@@ -1,5 +1,6 @@
 package br.com.iftm.edu.nostresswedding.data.repository
 
+import android.util.Log
 import br.com.iftm.edu.nostresswedding.data.mappers.toUserDto
 import br.com.iftm.edu.nostresswedding.domain.models.UserDto
 import com.google.firebase.auth.FirebaseAuth
@@ -42,12 +43,10 @@ class LoginRepository @Inject constructor(
                                 onSuccess(uid.toString(), userDto)
                             }
                         }, onFailure = { exception ->
+                            Log.e("LoginRepository", "Error fetching user data: ${exception.message}")
                             onFailure(exception)
                         })
                 }
-            }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
             }
     }
 }

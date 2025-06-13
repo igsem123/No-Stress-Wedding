@@ -6,42 +6,41 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.com.iftm.edu.nostresswedding.NoStressWeddingApp
-import br.com.iftm.edu.nostresswedding.R
-import br.com.iftm.edu.nostresswedding.presentation.screens.HomeScreen
-import br.com.iftm.edu.nostresswedding.presentation.screens.LoginScreen
-import br.com.iftm.edu.nostresswedding.presentation.screens.RegisterScreen
+import br.com.iftm.edu.nostresswedding.presentation.components.BottomAppBarNSW
+import br.com.iftm.edu.nostresswedding.presentation.navigation.NoStressWeddingDestinations
+import br.com.iftm.edu.nostresswedding.presentation.navigation.destinations.navigateToLoginScreen
+import br.com.iftm.edu.nostresswedding.presentation.navigation.noStressWeddingGraph
 import br.com.iftm.edu.nostresswedding.presentation.screens.TopAppBarExpandable
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.HomeViewModel
-import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginViewModel
-import br.com.iftm.edu.nostresswedding.presentation.viewmodels.RegisterViewModel
 import br.com.iftm.edu.nostresswedding.ui.theme.NoStressWeddingTheme
 import com.google.firebase.auth.FirebaseAuth
+import compose.icons.LineAwesomeIcons
+import compose.icons.lineawesomeicons.ArrowLeftSolid
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -51,15 +50,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NoStressWeddingTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
-                        NoStressWeddingApp(modifier = Modifier)
-                    }
-                }
+                NoStressWeddingApp(modifier = Modifier)
             }
         }
     }
@@ -73,95 +64,91 @@ fun NoStressWeddingApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val isShowTopBarWithBackAction = currentRoute == "register"
+    val isShowTopBarWithBackAction =
+        currentRoute == NoStressWeddingDestinations.RegisterScreen.route
+
     val isShowTopBarExpandable = when (currentRoute) {
-        "home/{uid}" -> true
-        "login" -> false
+        NoStressWeddingDestinations.HomeScreen.route -> true
+        NoStressWeddingDestinations.LoginScreen.route -> false
         else -> false
     }
 
-    Column {
-        if (isShowTopBarWithBackAction) {
-            TopAppBar(
-                title = {
-                    Image(
-                        painter = painterResource(R.drawable.ic_login),
-                        contentDescription = "Logo",
-                        Modifier.size(56.dp)
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Ícone de voltar"
+    val viewModel: HomeViewModel = hiltViewModel()
+
+    LaunchedEffect(Unit) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (!uid.isNullOrBlank()) {
+            viewModel.getUserDataFromRoom(uid)
+        }
+    }
+
+    val user by viewModel.user.collectAsState()
+    val logout = {
+        viewModel.logout()
+        navController.navigateToLoginScreen()
+    }
+
+    // Comportamento de rolagem para BottomAppBar
+    val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
+
+    Scaffold(
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            if (isShowTopBarWithBackAction) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Voltar",
+                            style = MaterialTheme.typography.titleLarge
                         )
-                    }
-                }
-            )
-        }
-
-        val userViewModel: HomeViewModel = hiltViewModel()
-        userViewModel.getUserDataFromRoom(FirebaseAuth.getInstance().uid.toString())
-        val user by userViewModel.user.collectAsState()
-        val logout = {
-            userViewModel.logout()
-            navController.navigate("login") {
-                popUpTo("home/${user?.uid}") { inclusive = true }
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = LineAwesomeIcons.ArrowLeftSolid,
+                                contentDescription = "Ícone de voltar",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+            } else if (isShowTopBarExpandable) {
+                TopAppBarExpandable(user = user, logout = logout)
             }
-        }
+        },
+        bottomBar = {
+            when (currentRoute) {
+                NoStressWeddingDestinations.LoginScreen.route,
+                NoStressWeddingDestinations.RegisterScreen.route -> return@Scaffold // Não exibe BottomAppBar nas telas de login e registro
+            }
 
-        if (isShowTopBarExpandable) {
-            TopAppBarExpandable(user = user, logout = logout)
+            BottomAppBarNSW(scrollBehavior)
         }
-
+    ) { innerPadding ->
+        val listState = rememberLazyListState()
         Box(
             modifier = modifier
                 .fillMaxSize()
+                .padding(innerPadding)
         ) {
             NavHost(
                 navController = navController,
-                startDestination = "login"
+                startDestination = NoStressWeddingDestinations.LoginScreen.route,
             ) {
-                // Define suas rotas aqui
-                composable("login") {
-                    val viewModel: LoginViewModel = hiltViewModel()
-                    LoginScreen(
-                        modifier = modifier,
-                        loginViewModel = viewModel,
-                        onLoginClick = { viewModel.login() },
-                        onRegisterClick = { navController.navigate("register") },
-                        onLoginSuccess = { uid ->
-                            navController.navigate("home/$uid") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                        }
-                    )
-                }
-                composable("register") {
-                    val viewModel: RegisterViewModel = hiltViewModel()
-                    RegisterScreen(
-                        viewModel = viewModel,
-                        navController = navController
-                    )
-                }
-                composable(route = "home/{uid}") {
-                    val uid = it.arguments?.getString("uid") ?: ""
-                    val viewmodel: HomeViewModel = hiltViewModel()
-                    viewmodel.getTasksByUserId(uid)
-                    val remainingDaysPhrase =
-                        viewmodel.getCountTillWeddingDayInString(user?.weddingDate ?: "")
-                    HomeScreen(
-                        modifier = modifier,
-                        user = user,
-                        remainingDaysPhrase = remainingDaysPhrase,
-                        viewmodel = viewmodel
-                    )
-                }
+                noStressWeddingGraph(
+                    navController = navController,
+                    listState = listState,
+                    homeViewModel = viewModel
+                )
             }
         }
     }

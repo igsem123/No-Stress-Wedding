@@ -9,9 +9,11 @@ import br.com.iftm.edu.nostresswedding.data.repository.LoginRepository
 import br.com.iftm.edu.nostresswedding.data.repository.TaskRepository
 import br.com.iftm.edu.nostresswedding.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,22 +25,18 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var _user: MutableStateFlow<UserEntity?> = MutableStateFlow(null)
-    val user: MutableStateFlow<UserEntity?>
-        get() = _user
+    val user = _user.asStateFlow()
 
     private val _tasks: MutableStateFlow<List<TaskEntity>> = MutableStateFlow(emptyList())
-    val tasks: StateFlow<List<TaskEntity>>
-        get() = _tasks
+    val tasks = _tasks.asStateFlow()
 
     private val _taskInsertState: MutableStateFlow<TaskInsertState> = MutableStateFlow(TaskInsertState.Idle)
-    val taskInsertState: StateFlow<TaskInsertState>
-        get() = _taskInsertState
+    val taskInsertState = _taskInsertState.asStateFlow()
 
-    fun getUserDataFromRoom(
-        uid: String
-    ) {
+    fun getUserDataFromRoom(uid: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _user.value = userRepository.getUserFromRoom(uid)
+            getTasksByUserId(uid) // Carrega as tarefas do usuário ao obter os dados do usuário
         }
     }
 
@@ -63,10 +61,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Busca as tarefas do usuário pelo ID.
-     * @param uid ID do usuário.
-     */
     fun getTasksByUserId(uid: String) {
         viewModelScope.launch(Dispatchers.IO) {
             taskRepository.getTasksByUserId(uid).collect { tasksList ->
@@ -85,8 +79,13 @@ class HomeViewModel @Inject constructor(
 
                     // Inserir a tarefa no banco de dados
                     taskRepository.insertTask(task)
+
+                    // Simulo um atraso para simular a inserção
+                    delay(2000)
+
+                    // Atualizar o estado para sucesso
                     _taskInsertState.value = TaskInsertState.Success
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     _taskInsertState.value = TaskInsertState.Error("Erro ao criar tarefa!")
                 }
             }
