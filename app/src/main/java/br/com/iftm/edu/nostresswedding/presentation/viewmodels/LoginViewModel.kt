@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginRepository: LoginRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : ViewModel() {
     // StateFlow para gerenciar o estado
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)

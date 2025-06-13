@@ -1,6 +1,12 @@
 package br.com.iftm.edu.nostresswedding.presentation.screens
 
 import android.widget.Toast
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,8 +20,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -24,7 +33,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +52,7 @@ import compose.icons.lineawesomeicons.ArrowRightSolid
 import compose.icons.lineawesomeicons.LockSolid
 import compose.icons.lineawesomeicons.UserSolid
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
@@ -61,6 +70,16 @@ fun LoginScreen(
     }
 
     val state by loginViewModel.uiState.collectAsState()
+    val infiniteTransition = rememberInfiniteTransition(label = "LoginScreenColorAnimation")
+    val colorAnimation by infiniteTransition.animateColor(
+        initialValue = MaterialTheme.colorScheme.primary,
+        targetValue = MaterialTheme.colorScheme.secondary,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 500, delayMillis = 0),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "LoginScreenColorAnimation"
+    )
 
     when (state) {
         is LoginUiState.Error -> {
@@ -97,26 +116,29 @@ fun LoginScreen(
             }
         )
 
-        is LoginUiState.Loading -> Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(color = Color.White),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Spacer(
-                modifier = Modifier.height(1.dp)
-            )
-            Image(
-                modifier = Modifier.padding(bottom = 16.dp),
-                painter = painterResource(id = R.drawable.no_stress_wedding_2_),
-                contentDescription = "Logo"
-            )
-            CircularProgressIndicator(
-                color = Pink40,
-                modifier = Modifier.size(50.dp)
-            )
-        }
+        is LoginUiState.Loading ->
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(color = Color.White),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Image(
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    painter = painterResource(id = R.drawable.no_stress_wedding_2_),
+                    contentDescription = "Logo"
+                )
+                LoadingIndicator(
+                    color = colorAnimation,
+                    modifier = Modifier.size(50.dp)
+                )
+                Text(
+                    text = "Carregando...",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = colorAnimation
+                )
+            }
 
         is LoginUiState.Success -> {
             // Navegar para a tela inicial
@@ -269,9 +291,6 @@ fun LoginForm(
 private fun LoginScreenPreview() {
     LoginScreen(
         modifier = Modifier.fillMaxSize(),
-        loginViewModel = LoginViewModel(
-            loginRepository = TODO(),
-            userRepository = TODO()
-        )
+        loginViewModel = TODO()
     )
 }

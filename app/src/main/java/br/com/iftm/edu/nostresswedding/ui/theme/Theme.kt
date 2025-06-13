@@ -13,28 +13,61 @@ import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
     primary = Pink40,
+    onPrimary = Color.Black,
+    primaryContainer = Pink20,
+    onPrimaryContainer = Color.White,
+
     secondary = PastelYellow40,
+    onSecondary = Color.Black,
+    secondaryContainer = PastelYellow20,
+    onSecondaryContainer = Color.White,
+
     tertiary = Pink80,
-    background = Color(0xFF1C1B1F),
-    surface = Color(0xFF1C1B1F),
-    onPrimary = Color(0xFFFA6E81),
-    onSecondary = Color(0xFFFA6E81),
-    onTertiary = Color(0xFFFA6E81),
-    onBackground = Color.White,
-    onSurface = Color.White,
+    onTertiary = Color.Black,
+    tertiaryContainer = Pink20,
+    onTertiaryContainer = Color.White,
+
+    background = SurfaceDim,
+    onBackground = Neutral90,
+    surface = SurfaceContainer,
+    onSurface = Neutral90,
+    surfaceVariant = Color(0xFF49454F),
+    onSurfaceVariant = Color(0xFFCAC4D0),
+
+    outline = Outline,
+    inverseSurface = Neutral90,
+    inverseOnSurface = SurfaceDim,
+    inversePrimary = Pink80
 )
+
 
 private val LightColorScheme = lightColorScheme(
     primary = Pink40,
-    secondary = PastelYellow40,
-    tertiary = Pink80,
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
     onPrimary = Color.White,
-    onSecondary = Color.White,
+    primaryContainer = Pink80,
+    onPrimaryContainer = Color.Black,
+
+    secondary = PastelYellow40,
+    onSecondary = Color.Black,
+    secondaryContainer = PastelYellow80,
+    onSecondaryContainer = Color.Black,
+
+    tertiary = Pink20,
     onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
+    tertiaryContainer = Pink80,
+    onTertiaryContainer = Color.Black,
+
+    background = SurfaceBright,
+    onBackground = Neutral10,
+    surface = Color(0xFFFFF8F5),
+    onSurface = Neutral10,
+    surfaceVariant = Color(0xFFE7E0EC),
+    onSurfaceVariant = Color(0xFF49454F),
+
+    outline = Outline,
+    inverseSurface = SurfaceDim,
+    inverseOnSurface = Neutral90,
+    inversePrimary = Pink20
 )
 
 @Composable
