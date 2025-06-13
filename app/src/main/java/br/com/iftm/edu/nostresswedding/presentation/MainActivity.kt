@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,15 +33,25 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.com.iftm.edu.nostresswedding.NoStressWeddingApp
 import br.com.iftm.edu.nostresswedding.presentation.components.BottomAppBarNSW
+import br.com.iftm.edu.nostresswedding.presentation.components.TopAppBarExpandable
 import br.com.iftm.edu.nostresswedding.presentation.navigation.NoStressWeddingDestinations
+import br.com.iftm.edu.nostresswedding.presentation.navigation.destinations.navigateToGiftScreen
+import br.com.iftm.edu.nostresswedding.presentation.navigation.destinations.navigateToGuestScreen
+import br.com.iftm.edu.nostresswedding.presentation.navigation.destinations.navigateToHomeScreen
 import br.com.iftm.edu.nostresswedding.presentation.navigation.destinations.navigateToLoginScreen
+import br.com.iftm.edu.nostresswedding.presentation.navigation.destinations.navigateToPaymentScreen
+import br.com.iftm.edu.nostresswedding.presentation.navigation.destinations.navigateToVendorScreen
 import br.com.iftm.edu.nostresswedding.presentation.navigation.noStressWeddingGraph
-import br.com.iftm.edu.nostresswedding.presentation.screens.TopAppBarExpandable
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.HomeViewModel
 import br.com.iftm.edu.nostresswedding.ui.theme.NoStressWeddingTheme
 import com.google.firebase.auth.FirebaseAuth
 import compose.icons.LineAwesomeIcons
 import compose.icons.lineawesomeicons.ArrowLeftSolid
+import compose.icons.lineawesomeicons.CreditCardSolid
+import compose.icons.lineawesomeicons.GiftSolid
+import compose.icons.lineawesomeicons.HomeSolid
+import compose.icons.lineawesomeicons.TruckSolid
+import compose.icons.lineawesomeicons.UsersSolid
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -131,7 +142,15 @@ fun NoStressWeddingApp(
                 NoStressWeddingDestinations.RegisterScreen.route -> return@Scaffold // Não exibe BottomAppBar nas telas de login e registro
             }
 
-            BottomAppBarNSW(scrollBehavior)
+            val bottomItems = listOf<Triple<String, ImageVector, () -> Unit>>(
+                Triple("Convidados", LineAwesomeIcons.UsersSolid) { navController.navigateToGuestScreen() },
+                Triple("Fornecedores", LineAwesomeIcons.TruckSolid) { navController.navigateToVendorScreen() },
+                Triple("Home", LineAwesomeIcons.HomeSolid) { navController.navigateToHomeScreen() },
+                Triple("Presentes", LineAwesomeIcons.GiftSolid) { navController.navigateToGiftScreen() },
+                Triple("Pagamentos", LineAwesomeIcons.CreditCardSolid) { navController.navigateToPaymentScreen() },
+            )
+
+            BottomAppBarNSW(scrollBehavior = scrollBehavior, bottomItems = bottomItems)
         }
     ) { innerPadding ->
         val listState = rememberLazyListState()

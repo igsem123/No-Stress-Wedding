@@ -1,14 +1,8 @@
 package br.com.iftm.edu.nostresswedding.presentation.screens
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,11 +18,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -44,7 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -57,7 +51,6 @@ import br.com.iftm.edu.nostresswedding.presentation.components.TaskCard
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.HomeViewModel
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.TaskInsertState
 import compose.icons.LineAwesomeIcons
-import compose.icons.lineawesomeicons.ArrowDownSolid
 import compose.icons.lineawesomeicons.ClockSolid
 import compose.icons.lineawesomeicons.PlusSolid
 
@@ -85,7 +78,7 @@ fun HomeScreen(
         item {
             Text(
                 text = "Bem-vindo, ${user?.name}!\n Aproveite seu planner de casamento!",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth(),
@@ -98,28 +91,24 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
+                    .shadow(1.dp, RoundedCornerShape(20.dp))
                     .height(200.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .border(
-                        width = 3.dp,
-                        color = Color.Black.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(20.dp)
-                    ),
+                    .background(color = MaterialTheme.colorScheme.surface),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Icon(
-                    imageVector = LineAwesomeIcons.ClockSolid,
-                    contentDescription = "Contador",
+                Image(
+                    painter = painterResource(id = R.drawable.ic_clock),
+                    contentDescription = "Wedding Image",
                     modifier = Modifier
-                        .fillMaxSize(0.4f),
-                    tint = MaterialTheme.colorScheme.secondary
+                        .fillMaxSize(0.5f)
                 )
                 Text(
                     text = remainingDaysPhrase,
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier
-                        .padding(16.dp),
+                        .padding(8.dp),
                     color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
                 )
@@ -136,19 +125,22 @@ fun HomeScreen(
             ) {
                 Text(
                     text = "Próximas Tarefas:",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .weight(1f)
                 )
                 IconButton(
                     onClick = { showFormDialog = true },
                     modifier = Modifier
                         .size(44.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)),
                 ) {
                     Icon(
                         imageVector = LineAwesomeIcons.PlusSolid,
                         contentDescription = "Adicionar Tarefa",
                         tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -159,7 +151,13 @@ fun HomeScreen(
                 task = it,
                 onCompleteTask = {
                     viewmodel.onCompleteTask(it)
-                }
+                },
+                onDeleteTask = {
+                    viewmodel.deleteTask(it)
+                },
+                onEditTask = { taskEdited ->
+                    viewmodel.updateTask(taskEdited)
+                },
             )
         }
 
@@ -296,7 +294,11 @@ fun FormBoxTask(viewmodel: HomeViewModel, user: UserEntity? = null, showFormDial
             }
 
             if (taskInsertState is TaskInsertState.Loading) {
-                CircularWavyProgressIndicator()
+                CircularWavyProgressIndicator(
+                    wavelength = 20.dp,
+                    waveSpeed = 6.dp,
+                    gapSize = 4.dp,
+                )
             } else {
                 Text(
                     text = "Adicionar Tarefa",
@@ -304,98 +306,6 @@ fun FormBoxTask(viewmodel: HomeViewModel, user: UserEntity? = null, showFormDial
                     textAlign = TextAlign.Center
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun TopAppBarExpandable(
-    user: UserEntity?,
-    logout: () -> Unit = {}
-) {
-    val maxHeight = 260.dp
-    val minHeight = 108.dp
-    var isExpanded by remember { mutableStateOf(false) }
-
-    val pulseAnimation = animateFloatAsState(
-        targetValue = if (isExpanded) 1.2f else 1f,
-        animationSpec = infiniteRepeatable(
-            animation = androidx.compose.animation.core.tween(durationMillis = 1000),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
-        ),
-        label = "PulseAnimation"
-    )
-
-    val appBarHeight by animateDpAsState(
-        targetValue = if (isExpanded) maxHeight else minHeight,
-        label = "AppBarHeightAnimation"
-    )
-
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isExpanded) 180f else 0f,
-        label = "ArrowRotation"
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(appBarHeight)
-            .background(MaterialTheme.colorScheme.primary)
-            .clickable { isExpanded = !isExpanded },
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 28.dp)
-        ) {
-            if (isExpanded) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(0.4f))
-                        .border(
-                            width = 2.dp,
-                            color = Color.White.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "Informações do Usuário",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Nome: ${user?.name ?: "..."}", color = Color.White)
-                    Text("Email: ${user?.email ?: "..."}", color = Color.White)
-                    Text("Casamento: ${user?.weddingDate ?: "..."}", color = Color.White)
-                    Text("Orçamento: R$ ${user?.weddingBudget ?: "..."}", color = Color.White)
-                }
-            } else {
-                Image(
-                    painter = painterResource(R.drawable.ic_login),
-                    contentDescription = "Logo",
-                    modifier = Modifier
-                        .size(52.dp),
-                )
-            }
-
-            Icon(
-                imageVector = LineAwesomeIcons.ArrowDownSolid,
-                contentDescription = if (isExpanded) "Recolher" else "Expandir",
-                modifier = Modifier
-                    .rotate(rotationAngle)
-                    .size(20.dp * pulseAnimation.value),
-                tint = Color.White
-            )
         }
     }
 }

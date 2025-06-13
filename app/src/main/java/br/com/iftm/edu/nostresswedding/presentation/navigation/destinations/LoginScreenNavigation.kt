@@ -7,9 +7,12 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import br.com.iftm.edu.nostresswedding.presentation.navigation.NoStressWeddingDestinations
 import br.com.iftm.edu.nostresswedding.presentation.screens.LoginScreen
+import br.com.iftm.edu.nostresswedding.presentation.viewmodels.HomeViewModel
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.LoginViewModel
 
-internal fun NavGraphBuilder.loginScreenNavigation(navController: NavController) {
+internal fun NavGraphBuilder.loginScreenNavigation(
+    navController: NavController,
+) {
     composable(NoStressWeddingDestinations.LoginScreen.route) {
         val viewModel: LoginViewModel = hiltViewModel()
         LoginScreen(
