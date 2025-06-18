@@ -22,16 +22,20 @@ class TaskRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateTaskStatus(task: TaskEntity) {
+    override suspend fun completeTask(task: TaskEntity) {
         try {
-            db.taskDao().updateTaskStatus(task.id, task.isCompleted)
+            db.taskDao().completeTask(task.id, task.isCompleted)
         } catch (e: Exception) {
             throw e
         }
     }
 
     override suspend fun deleteTask(task: TaskEntity) {
-        TODO("Not yet implemented")
+        return try {
+            db.taskDao().deleteTask(task)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override fun getTasksByUserId(userId: String): Flow<List<TaskEntity>> {

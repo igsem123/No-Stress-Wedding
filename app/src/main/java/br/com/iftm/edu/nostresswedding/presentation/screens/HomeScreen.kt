@@ -22,7 +22,6 @@ import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -46,12 +45,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import br.com.iftm.edu.nostresswedding.R
 import br.com.iftm.edu.nostresswedding.data.local.entity.TaskEntity
-import br.com.iftm.edu.nostresswedding.data.local.entity.UserEntity
 import br.com.iftm.edu.nostresswedding.presentation.components.TaskCard
+import br.com.iftm.edu.nostresswedding.presentation.states.HomeUiState
+import br.com.iftm.edu.nostresswedding.presentation.states.TaskCreationState
 import br.com.iftm.edu.nostresswedding.presentation.viewmodels.HomeViewModel
-import br.com.iftm.edu.nostresswedding.presentation.viewmodels.TaskInsertState
 import compose.icons.LineAwesomeIcons
-import compose.icons.lineawesomeicons.ClockSolid
 import compose.icons.lineawesomeicons.PlusSolid
 
 @Composable
@@ -59,13 +57,8 @@ fun HomeScreen(
     viewmodel: HomeViewModel,
 ) {
     var showFormDialog by remember { mutableStateOf(false) }
-    val tasks by viewmodel.tasks.collectAsState()
-    val user by viewmodel.user.collectAsState()
-    val remainingDaysPhrase = viewmodel.getCountTillWeddingDayInString(user?.weddingDate ?: "")
-
-    LaunchedEffect(Unit) {
-        viewmodel.getTasksByUserId(user?.uid ?: "")
-    }
+    val uiState by viewmodel.uiState.collectAsState()
+    val remainingDaysPhrase = viewmodel.getCountTillWeddingDayInString(uiState.user?.weddingDate ?: "")
 
     LazyColumn(
         modifier = Modifier
@@ -77,7 +70,7 @@ fun HomeScreen(
     ) {
         item {
             Text(
-                text = "Bem-vindo, ${user?.name}!\n Aproveite seu planner de casamento!",
+                text = "Bem-vindo, ${uiState.user?.name}!\n Aproveite seu planner de casamento!",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .padding(16.dp)
@@ -146,7 +139,7 @@ fun HomeScreen(
             }
         }
 
-        items(tasks) {
+        items(uiState.tasks) {
             TaskCard(
                 task = it,
                 onCompleteTask = {
@@ -174,8 +167,8 @@ fun HomeScreen(
         ) {
             FormBoxTask(
                 viewmodel = viewmodel,
-                user = user,
-                showFormDialog = { showFormDialog = false }
+                showFormDialog = { showFormDialog = false },
+                uiState = uiState
             )
         }
     }
@@ -183,10 +176,13 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun FormBoxTask(viewmodel: HomeViewModel, user: UserEntity? = null, showFormDialog: () -> Unit) {
+fun FormBoxTask(
+    viewmodel: HomeViewModel,
+    showFormDialog: () -> Unit,
+    uiState: HomeUiState
+) {
     var taskTitle by rememberSaveable { mutableStateOf("") }
     var taskDescription by rememberSaveable { mutableStateOf("") }
-    val taskInsertState by viewmodel.taskInsertState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -224,11 +220,11 @@ fun FormBoxTask(viewmodel: HomeViewModel, user: UserEntity? = null, showFormDial
                     color = Color(0xFFFA6E81),
                 )
             },
-            isError = taskInsertState is TaskInsertState.Error,
+            isError = uiState.taskCreationState is TaskCreationState.Error,
             supportingText = {
-                if (taskInsertState is TaskInsertState.Error) {
+                if (uiState.taskCreationState is TaskCreationState.Error) {
                     Text(
-                        text = (taskInsertState as TaskInsertState.Error).message,
+                        text = uiState.taskCreationState.message,
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -257,11 +253,11 @@ fun FormBoxTask(viewmodel: HomeViewModel, user: UserEntity? = null, showFormDial
                 )
             },
             maxLines = 5,
-            isError = taskInsertState is TaskInsertState.Error,
+            isError = uiState.taskCreationState is TaskCreationState.Error,
             supportingText = {
-                if (taskInsertState is TaskInsertState.Error) {
+                if (uiState.taskCreationState is TaskCreationState.Error) {
                     Text(
-                        text = (taskInsertState as TaskInsertState.Error).message,
+                        text = uiState.taskCreationState.message,
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -274,7 +270,7 @@ fun FormBoxTask(viewmodel: HomeViewModel, user: UserEntity? = null, showFormDial
                     task = TaskEntity(
                         title = taskTitle,
                         description = taskDescription,
-                        userId = user?.uid ?: "",
+                        userId = uiState.user?.uid ?: "",
                     )
                 )
             },
@@ -286,14 +282,14 @@ fun FormBoxTask(viewmodel: HomeViewModel, user: UserEntity? = null, showFormDial
                 contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
-            LaunchedEffect(taskInsertState) {
-                if (taskInsertState is TaskInsertState.Success) {
+            LaunchedEffect(uiState.taskCreationState) {
+                if (uiState.taskCreationState is TaskCreationState.Success) {
                     showFormDialog()
                     viewmodel.clearTaskInsertState()
                 }
             }
 
-            if (taskInsertState is TaskInsertState.Loading) {
+            if (uiState.taskCreationState is TaskCreationState.Loading) {
                 CircularWavyProgressIndicator(
                     wavelength = 20.dp,
                     waveSpeed = 6.dp,

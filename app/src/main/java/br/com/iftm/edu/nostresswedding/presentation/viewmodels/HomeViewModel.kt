@@ -8,6 +8,8 @@ import br.com.iftm.edu.nostresswedding.data.local.entity.UserEntity
 import br.com.iftm.edu.nostresswedding.data.repository.LoginRepository
 import br.com.iftm.edu.nostresswedding.data.repository.TaskRepository
 import br.com.iftm.edu.nostresswedding.data.repository.UserRepository
+import br.com.iftm.edu.nostresswedding.presentation.states.HomeUiState
+import br.com.iftm.edu.nostresswedding.presentation.states.TaskCreationState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
@@ -24,18 +26,33 @@ class HomeViewModel @Inject constructor(
     private val taskRepository: TaskRepository
 ) : ViewModel() {
 
-    private var _user: MutableStateFlow<UserEntity?> = MutableStateFlow(null)
-    val user = _user.asStateFlow()
-
-    private val _tasks: MutableStateFlow<List<TaskEntity>> = MutableStateFlow(emptyList())
-    val tasks = _tasks.asStateFlow()
-
-    private val _taskInsertState: MutableStateFlow<TaskInsertState> = MutableStateFlow(TaskInsertState.Idle)
-    val taskInsertState = _taskInsertState.asStateFlow()
+    val _uiState = MutableStateFlow(HomeUiState())
+    val uiState = _uiState.asStateFlow()
 
     fun getUserDataFromRoom(uid: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            _user.value = userRepository.getUserFromRoom(uid)
+            _uiState.value = _uiState.value.copy(user = userRepository.getUserFromRoom(uid))
+
+            if(uiState.value.user == null) {
+                // Se o usuário não estiver no banco de dados, busca do Firebase
+                userRepository.getUserFromFirestore(
+                    uid = uid,
+                    onSuccess = { user ->
+                        // Atualiza o estado com os dados do usuário obtidos
+                        _uiState.value = _uiState.value.copy(user = user)
+
+                        // Insere o usuário no banco de dados local
+                        viewModelScope.launch(Dispatchers.IO) {
+                            userRepository.saveOrUpdateUserInRoom(user)
+                        }
+                    },
+                    onFailure = {
+                        _uiState.value = _uiState.value.copy(error("Erro ao obter dados do usuário: ${it.message}"))
+                    }
+                )
+
+            }
+
             getTasksByUserId(uid) // Carrega as tarefas do usuário ao obter os dados do usuário
         }
     }
@@ -64,7 +81,7 @@ class HomeViewModel @Inject constructor(
     fun getTasksByUserId(uid: String) {
         viewModelScope.launch(Dispatchers.IO) {
             taskRepository.getTasksByUserId(uid).collect { tasksList ->
-                _tasks.value = tasksList
+                _uiState.value = _uiState.value.copy(tasks = tasksList.toList())
             }
         }
     }
@@ -72,10 +89,10 @@ class HomeViewModel @Inject constructor(
     fun insertTask(task: TaskEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             if(task.title.isBlank() || task.description.isBlank()) {
-                _taskInsertState.value = TaskInsertState.Error("Preencha todos os campos!")
+                _uiState.value = _uiState.value.copy(taskCreationState = TaskCreationState.Error("Preencha todos os campos!"))
             } else {
                 try {
-                    _taskInsertState.value = TaskInsertState.Loading
+                    _uiState.value = _uiState.value.copy(taskCreationState = TaskCreationState.Loading)
 
                     // Inserir a tarefa no banco de dados
                     taskRepository.insertTask(task)
@@ -84,9 +101,9 @@ class HomeViewModel @Inject constructor(
                     delay(2000)
 
                     // Atualizar o estado para sucesso
-                    _taskInsertState.value = TaskInsertState.Success
+                    _uiState.value = _uiState.value.copy(taskCreationState = TaskCreationState.Success)
                 } catch (_: Exception) {
-                    _taskInsertState.value = TaskInsertState.Error("Erro ao criar tarefa!")
+                    _uiState.value = _uiState.value.copy(taskCreationState = TaskCreationState.Error("Erro ao criar tarefa!"))
                 }
             }
         }
@@ -94,7 +111,8 @@ class HomeViewModel @Inject constructor(
 
     fun onCompleteTask(task: TaskEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            taskRepository.updateTaskStatus(task)
+            val updatedTask = task.copy(isCompleted = !task.isCompleted)
+            taskRepository.completeTask(updatedTask)
         }
     }
 
@@ -107,17 +125,11 @@ class HomeViewModel @Inject constructor(
     fun updateTask(task: TaskEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             taskRepository.updateTask(task)
+            getTasksByUserId(task.userId) // Atualiza a lista após atualizar a tarefa
         }
     }
 
     fun clearTaskInsertState() {
-        _taskInsertState.value = TaskInsertState.Idle
+        _uiState.value = _uiState.value.copy(taskCreationState = TaskCreationState.Idle)
     }
-}
-
-sealed class TaskInsertState {
-    object Idle : TaskInsertState()
-    object Loading : TaskInsertState()
-    object Success : TaskInsertState()
-    data class Error(val message: String) : TaskInsertState()
 }

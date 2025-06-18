@@ -53,6 +53,8 @@ import compose.icons.lineawesomeicons.HomeSolid
 import compose.icons.lineawesomeicons.TruckSolid
 import compose.icons.lineawesomeicons.UsersSolid
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -93,7 +95,7 @@ fun NoStressWeddingApp(
         }
     }
 
-    val user by viewModel.user.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val logout = {
         viewModel.logout()
         navController.navigateToLoginScreen()
@@ -133,7 +135,7 @@ fun NoStressWeddingApp(
                     )
                 )
             } else if (isShowTopBarExpandable) {
-                TopAppBarExpandable(user = user, logout = logout)
+                TopAppBarExpandable(user = uiState.user, logout = logout)
             }
         },
         bottomBar = {

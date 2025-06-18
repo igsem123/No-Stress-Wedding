@@ -18,11 +18,24 @@ class UserRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val db: NSWeddingDatabase
 ) {
-    fun getUserFromFirestore(uid: String, onSuccess: (Map<String, Any>) -> Unit, onFailure: (Exception) -> Unit) {
+    fun getUserFromFirestore(
+        uid: String,
+        onSuccess: (UserEntity) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
         firestore.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
-                if (document != null) {
-                    onSuccess(document.data ?: emptyMap())
+                if (document != null && document.exists()) {
+                    val userEntity = UserEntity(
+                        uid = uid,
+                        email = document.getString("email") ?: "",
+                        name = document.getString("name") ?: "",
+                        phone = document.getString("phone") ?: "",
+                        username = document.getString("username") ?: "",
+                        weddingBudget = (document.getDouble("weddingBudget")?.toString() ?: "0.0"),
+                        weddingDate = document.getString("weddingDate") ?: ""
+                    )
+                    onSuccess(userEntity)
                 } else {
                     onFailure(Exception("No such document"))
                 }

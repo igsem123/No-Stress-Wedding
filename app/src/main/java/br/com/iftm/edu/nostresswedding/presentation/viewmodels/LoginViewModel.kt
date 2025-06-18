@@ -57,14 +57,13 @@ class LoginViewModel @Inject constructor(
                 loginRepository.signInWithEmailAndUser(
                     email = _email.value,
                     password = _password.value,
-                    onSuccess = { uid, user ->
+                    onSuccess = { user ->
                         viewModelScope.launch {
                             try {
-                                val userEntity = user.toUserEntity()
                                 withContext(Dispatchers.IO) {
-                                    userRepository.saveOrUpdateUserInRoom(userEntity)
+                                    userRepository.saveOrUpdateUserInRoom(user)
                                 }
-                                _uiState.value = LoginUiState.Success(uid)
+                                _uiState.value = LoginUiState.Success(user.uid)
                             } catch (e: Exception) {
                                 _uiState.value = LoginUiState.Error("Erro ao salvar usuário: ${e.message}")
                             }

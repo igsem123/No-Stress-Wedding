@@ -16,8 +16,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -42,6 +46,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PlatformImeOptions
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -60,8 +69,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun TaskCard(
     task: TaskEntity,
-    onCompleteTask: () -> Unit = {},
-    onDeleteTask: () -> Unit = {},
+    onCompleteTask: (TaskEntity) -> Unit = {},
+    onDeleteTask: (TaskEntity) -> Unit = {},
     onEditTask: (TaskEntity) -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -113,14 +122,14 @@ fun TaskCard(
 @Composable
 fun TaskCardContent(
     task: TaskEntity,
-    onCompleteTask: () -> Unit,
+    onCompleteTask: (TaskEntity) -> Unit,
     expanded: Boolean,
-    onDeleteTask: () -> Unit = {},
+    onDeleteTask: (TaskEntity) -> Unit = {},
     onEditTask: (TaskEntity) -> Unit = {}
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var editedTitle by remember { mutableStateOf(task.title) }
-    var editedDescription by remember { mutableStateOf("Toque e segure por 3 segundos para editar!") }
+    var editedDescription by remember { mutableStateOf(task.description) }
 
     val context = LocalContext.current
     Row(
@@ -132,65 +141,45 @@ fun TaskCardContent(
     ) {
         Box(
             modifier = Modifier
-                .weight(0.6f)
                 .wrapContentWidth()
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
-                            Toast.makeText(context, "Segure para editar!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Toque duas vezes para editar!", Toast.LENGTH_SHORT).show()
                         },
-                        onLongPress = {
+                        onDoubleTap = {
                             isEditing = true
                         }
                     )
-                }
+                },
+            contentAlignment = Alignment.CenterStart
         ) {
             if (isEditing) {
-                OutlinedTextField(
+                BasicTextField(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .align(Alignment.CenterStart),
                     value = editedTitle,
                     onValueChange = { editedTitle = it },
                     maxLines = 1,
-                    trailingIcon = {
-                        IconButton(
-                            onClick = {
-                                isEditing = false
-                                if (editedTitle.isNotBlank()) {
-                                    val updatedTask = task.copy(title = editedTitle)
-                                    onEditTask(updatedTask)
-                                } else {
-                                    Toast.makeText(context, "Título não pode ser vazio!", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = LineAwesomeIcons.CheckSolid,
-                                contentDescription = "Salvar Tarefa",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                        }
-                    },
-                    leadingIcon = {
-                        IconButton(
-                            onClick = {
-                                isEditing = false
-                                editedTitle = task.title // Reset to original title
-                            }
-                        ) {
-                            Icon(
-                                imageVector = LineAwesomeIcons.WindowClose,
-                                contentDescription = "Cancelar Edição",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences,
+                        autoCorrectEnabled = true,
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done,
+                        platformImeOptions = PlatformImeOptions("Done"),
+                        showKeyboardOnFocus = true,
+                        hintLocales = LocaleList("pt-BR")
                     ),
-                    shape = RoundedCornerShape(16.dp),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            isEditing = false
+                            if (editedTitle.isNotBlank()) {
+                                onEditTask(task)
+                            } else {
+                                Toast.makeText(context, "Título não pode ser vazio!", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
                 )
             } else {
                 Text(
@@ -200,16 +189,16 @@ fun TaskCardContent(
                     style = MaterialTheme.typography.titleLarge,
                     textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                     textAlign = TextAlign.Start,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .wrapContentWidth()
                 )
             }
         }
         Checkbox(
             checked = task.isCompleted,
             onCheckedChange = {
-                task.isCompleted = it
-                onCompleteTask()
+                onCompleteTask(task)
             },
             modifier = Modifier,
             colors = CheckboxDefaults.colors(
@@ -246,7 +235,7 @@ fun TaskCardContent(
                 overflow = TextOverflow.Ellipsis
             )
                 IconButton(
-                    onClick = { onDeleteTask() }
+                    onClick = { onDeleteTask(task) }
                 ) {
                     Icon(
                         imageVector = LineAwesomeIcons.TrashSolid,
