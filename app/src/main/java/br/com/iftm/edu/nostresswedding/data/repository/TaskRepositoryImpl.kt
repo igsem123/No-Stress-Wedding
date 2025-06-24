@@ -3,7 +3,6 @@ package br.com.iftm.edu.nostresswedding.data.repository
 import br.com.iftm.edu.nostresswedding.data.local.database.NSWeddingDatabase
 import br.com.iftm.edu.nostresswedding.data.local.entity.TaskEntity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class TaskRepositoryImpl @Inject constructor(
@@ -32,7 +31,7 @@ class TaskRepositoryImpl @Inject constructor(
 
     override suspend fun deleteTask(task: TaskEntity) {
         return try {
-            db.taskDao().deleteTask(task)
+            db.taskDao().deleteTask(task.id)
         } catch (e: Exception) {
             throw e
         }

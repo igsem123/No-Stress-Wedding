@@ -3,6 +3,8 @@ package br.com.iftm.edu.nostresswedding.data.repository
 import android.util.Log
 import br.com.iftm.edu.nostresswedding.data.local.entity.UserEntity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 /**
@@ -16,28 +18,16 @@ class LoginRepository @Inject constructor(
 ) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    fun signInWithEmailAndUser(
+    suspend fun signInWithEmailAndPassword(
         email: String,
-        password: String,
-        onSuccess: (UserEntity) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnSuccessListener { result ->
-                val uid = result.user?.uid
-                result.user?.let { user ->
-                    userRepository.getUserFromFirestore(
-                        uid = uid.toString(),
-                        onSuccess = { onSuccess(it) },
-                        onFailure = { exception ->
-                            Log.e(
-                                "LoginRepository",
-                                "Error fetching user data: ${exception.message}"
-                            )
-                            onFailure(exception)
-                        }
-                    )
-                }
-            }
+        password: String
+    ) : FirebaseUser? {
+        return try {
+            val result = auth.signInWithEmailAndPassword(email, password).await()
+            result.user
+        } catch (e: Exception) {
+            Log.e("LoginRepository", "Erro ao logar: ${e.message}")
+            null
+        }
     }
 }

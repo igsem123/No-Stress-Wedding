@@ -122,7 +122,7 @@ fun TaskCard(
 @Composable
 fun TaskCardContent(
     task: TaskEntity,
-    onCompleteTask: (TaskEntity) -> Unit,
+    onCompleteTask: (TaskEntity) -> Unit = {},
     expanded: Boolean,
     onDeleteTask: (TaskEntity) -> Unit = {},
     onEditTask: (TaskEntity) -> Unit = {}
@@ -225,15 +225,32 @@ fun TaskCardContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-            Text(
-                text = task.description,
-                modifier = Modifier
-                    .weight(1f),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 4,
-                style = MaterialTheme.typography.bodyMedium,
-                overflow = TextOverflow.Ellipsis
-            )
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = {
+                                    Toast.makeText(context, "Toque duas vezes para editar!", Toast.LENGTH_SHORT).show()
+                                },
+                                onDoubleTap = {
+                                    isEditing = true
+                                }
+                            )
+                        },
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = task.description,
+                        modifier = Modifier
+                            .wrapContentSize(),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 4,
+                        style = MaterialTheme.typography.bodyMedium,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 IconButton(
                     onClick = { onDeleteTask(task) }
                 ) {

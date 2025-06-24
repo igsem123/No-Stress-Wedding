@@ -2,6 +2,7 @@ package br.com.iftm.edu.nostresswedding.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.iftm.edu.nostresswedding.data.local.entity.UserEntity
 import br.com.iftm.edu.nostresswedding.data.mappers.toUserDto
 import br.com.iftm.edu.nostresswedding.data.mappers.toUserEntity
 import br.com.iftm.edu.nostresswedding.data.repository.LoginRepository
@@ -51,30 +52,37 @@ class LoginViewModel @Inject constructor(
 
     // Função para fazer login
     fun login() {
+        _uiState.value = LoginUiState.Loading
+
         viewModelScope.launch {
-            _uiState.value = LoginUiState.Loading
             try {
-                loginRepository.signInWithEmailAndUser(
+                val firebaseUser = loginRepository.signInWithEmailAndPassword(
                     email = _email.value,
-                    password = _password.value,
-                    onSuccess = { user ->
-                        viewModelScope.launch {
-                            try {
-                                withContext(Dispatchers.IO) {
-                                    userRepository.saveOrUpdateUserInRoom(user)
-                                }
-                                _uiState.value = LoginUiState.Success(user.uid)
-                            } catch (e: Exception) {
-                                _uiState.value = LoginUiState.Error("Erro ao salvar usuário: ${e.message}")
-                            }
-                        }
-                    },
-                    onFailure = { exception ->
-                        _uiState.value = LoginUiState.Error(exception.message ?: "Erro desconhecido")
-                    }
+                    password = _password.value
                 )
+
+                firebaseUser?.let { user ->
+                    // Busca o usuário do Firestore
+                    userRepository.getUserFromFirestore(
+                        uid = user.uid,
+                        onSuccess = { userEntity ->
+                            // Salva o usuário no banco de dados local
+                            viewModelScope.launch(Dispatchers.IO) {
+                                userRepository.saveOrUpdateUserInRoom(userEntity)
+
+                                // Atualiza o estado com o usuário logado
+                                _uiState.value = LoginUiState.Success(userEntity)
+                            }
+                        },
+                        onFailure = { exception ->
+                            _uiState.value = LoginUiState.Error("Erro ao buscar dados do usuário no Firestore: ${exception.message}")
+                        }
+                    )
+                } ?: run {
+                    _uiState.value = LoginUiState.Error("Credenciais inválidas ou usuário não encontrado no Firebase.")
+                }
             } catch (e: Exception) {
-                _uiState.value = LoginUiState.Error("Erro inesperado: ${e.message}")
+                _uiState.value = LoginUiState.Error("Erro inesperado no login: ${e.message}")
             }
         }
     }
@@ -83,6 +91,6 @@ class LoginViewModel @Inject constructor(
 sealed class LoginUiState {
     object Idle : LoginUiState()
     object Loading : LoginUiState()
-    data class Success(val userId: String? = null) : LoginUiState()
+    data class Success(val user: UserEntity?) : LoginUiState()
     data class Error(val message: String) : LoginUiState()
 }

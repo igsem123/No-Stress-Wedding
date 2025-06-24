@@ -32,7 +32,7 @@ class UserRepository @Inject constructor(
                         name = document.getString("name") ?: "",
                         phone = document.getString("phone") ?: "",
                         username = document.getString("username") ?: "",
-                        weddingBudget = (document.getDouble("weddingBudget")?.toString() ?: "0.0"),
+                        weddingBudget = document.getString("weddingBudget") ?: "",
                         weddingDate = document.getString("weddingDate") ?: ""
                     )
                     onSuccess(userEntity)

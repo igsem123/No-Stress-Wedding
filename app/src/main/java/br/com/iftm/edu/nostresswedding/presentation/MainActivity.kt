@@ -82,6 +82,10 @@ fun NoStressWeddingApp(
 
     val isShowTopBarExpandable = when (currentRoute) {
         NoStressWeddingDestinations.HomeScreen.route -> true
+        NoStressWeddingDestinations.GuestScreen.route -> true
+        NoStressWeddingDestinations.VendorScreen.route -> true
+        NoStressWeddingDestinations.GiftScreen.route -> true
+        NoStressWeddingDestinations.PaymentScreen.route -> true
         NoStressWeddingDestinations.LoginScreen.route -> false
         else -> false
     }

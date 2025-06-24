@@ -4,11 +4,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import br.com.iftm.edu.nostresswedding.presentation.navigation.NoStressWeddingDestinations
+import br.com.iftm.edu.nostresswedding.presentation.screens.GiftScreen
 
 internal fun NavGraphBuilder.giftScreenNavigation(navController: NavController) {
     // Implement the navigation for the Gift Screen here
     composable(NoStressWeddingDestinations.GiftScreen.route) {
-    //     GiftScreen()
+         GiftScreen()
     }
 }
 

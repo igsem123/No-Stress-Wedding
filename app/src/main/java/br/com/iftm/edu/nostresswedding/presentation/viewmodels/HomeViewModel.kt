@@ -119,6 +119,7 @@ class HomeViewModel @Inject constructor(
     fun deleteTask(task: TaskEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             taskRepository.deleteTask(task)
+            getTasksByUserId(task.userId) // Atualiza a lista após deletar a tarefa
         }
     }
 

@@ -142,15 +142,9 @@ fun HomeScreen(
         items(uiState.tasks) {
             TaskCard(
                 task = it,
-                onCompleteTask = {
-                    viewmodel.onCompleteTask(it)
-                },
-                onDeleteTask = {
-                    viewmodel.deleteTask(it)
-                },
-                onEditTask = { taskEdited ->
-                    viewmodel.updateTask(taskEdited)
-                },
+                onCompleteTask = { viewmodel.onCompleteTask(it) },
+                onDeleteTask = { viewmodel.deleteTask(it) },
+                onEditTask = { viewmodel.updateTask(it) },
             )
         }
 
